@@ -7,10 +7,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="MANIFEST.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png">
 <title>背单词 · 分享版</title>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
 <style>
   :root{
     --bg:#0f1216; --card:rgba(23,28,34,.86); --line:rgba(37,44,53,.9); --fg:#e8edf3; --dim:#8b96a4;
