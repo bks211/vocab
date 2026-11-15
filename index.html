@@ -18,6 +18,36 @@
     });
   }
 </script>
+<meta name="app-build" content="20261115-1414">
+<script>
+window.__BUILD = '20261115-1414';
+(function(){
+  function showUpdateBar(){
+    if(document.getElementById('updBar')) return;
+    var d = document.createElement('div');
+    d.id = 'updBar';
+    d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;padding:14px 16px;background:#4ea8de;color:#07121a;font-weight:700;text-align:center;cursor:pointer;font-size:15px';
+    d.textContent = '有新版本 · 点这里更新';
+    d.onclick = function(){ location.replace(location.pathname + '?v=' + Date.now()); };
+    document.body.appendChild(d);
+  }
+  async function checkUpdate(silent){
+    try{
+      var r = await fetch('index.html?t=' + Date.now(), {cache:'no-store'});
+      var t = await r.text();
+      var m = t.match(/__BUILD\s*=\s*'([^']+)'/);
+      if(m && m[1] && m[1] !== window.__BUILD){ showUpdateBar(); return true; }
+      if(!silent && window.toast) window.toast('已经是最新版本');
+    }catch(e){
+      if(!silent && window.toast) window.toast('检查更新失败，稍后再试');
+    }
+    return false;
+  }
+  window.checkUpdate = checkUpdate;
+  window.addEventListener('load', function(){ setTimeout(function(){ checkUpdate(true); }, 1800); });
+  setInterval(function(){ checkUpdate(true); }, 5 * 60 * 1000);
+})();
+</script>
 <style>
   :root{
     --bg:#0f1216; --card:rgba(23,28,34,.86); --line:rgba(37,44,53,.9); --fg:#e8edf3; --dim:#8b96a4;
@@ -1994,6 +2024,7 @@ function renderSettings(){
     <button class="btn" id="clearToday">清空今天学过的词（当作没学过）</button>
     <button class="btn" id="resetDay">重置今天（不动历史进度）</button>
     <button class="btn" id="deckImport" style="border-color:#2b6b8c">📥 导入词库（给别人做的词表）</button>
+    <button class="btn ghost" id="checkUpd">🔄 检查更新</button>
     ${(S.imported && S.imported.list && S.imported.list.length) ? `<button class="btn ghost" id="deckExport">📤 导出当前导入的词库（${S.imported.list.length} 词）</button>` : ''}
     <button class="btn" id="export">导出备份（JSON）</button>
     <button class="btn" id="import">导入备份</button>
