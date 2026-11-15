@@ -1,7 +1,7 @@
 {
-  "name": "背单词",
-  "short_name": "背单词",
-  "description": "间隔重复背单词：词根、易混词、发音标记",
+  "name": "英语工具箱",
+  "short_name": "工具箱",
+  "description": "背单词 + 错题归因",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
