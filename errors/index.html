@@ -57,28 +57,347 @@
   .del{float:right;color:#ff8a8a;background:none;border:none;font-size:13px;cursor:pointer}
   .empty{color:var(--dim);text-align:center;padding:20px;font-size:14px}
   .hide{display:none!important}
-  header{position:relative}
-  .navback{
-    position:absolute;left:-4px;top:50%;transform:translateY(-50%);
-    width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
-    background:transparent;color:var(--fg);font-size:22px;line-height:1;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0 0 2px;
-    font-family:inherit;
-  }
-  .navback:active{background:#20272f}
-  header .title{margin-left:40px}
   footer{margin-top:auto;padding-top:16px;text-align:center;color:#4a5461;font-size:12px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <button class="navback" id="errBack" aria-label="返回">‹</button>
     <div class="title">错题归因本</div>
     <div class="muted" id="cnt"></div>
   </header>
   <main id="view"></main>
 </div>
+<script>
+/* 内置小题库：每道题都对应一个错因，做错可直接归因 */
+/* 内置小题库：每道题都对应一个错因，做错可直接归因 */
+const BANK = [
+  /* ---------- 阅读：判断边界 ---------- */
+  {type:'read', reason:'把阅读当翻译，没抓作者意图',
+   q:'原文：The new policy may reduce costs for small firms.\n下面哪项与原文一致？',
+   opts:['新政策一定会降低小公司的成本','新政策有可能降低小公司的成本','新政策只对大公司有利','新政策已经降低了所有公司的成本'],
+   ans:1, why:'原文是 may（可能），选项把它说成“一定/已经”，属于把可能说成必然。'},
+
+  {type:'read', reason:'范围被放大（可能→一定 / 部分→所有）',
+   q:'原文：Some students prefer online classes.\n下面哪项与原文一致？',
+   opts:['所有学生都喜欢网课','部分学生更喜欢网课','学生都不喜欢网课','老师更喜欢网课'],
+   ans:1, why:'some（部分）≠ all（所有）。选项把范围放大就是错。'},
+
+  {type:'read', reason:'只看原词匹配就选了',
+   q:'原文：The company cut its workforce to lower expenses.\n题目问：公司为什么裁员？\n下面哪项最可能是正确答案的改写？',
+   opts:['to cut its workforce','to reduce costs','to hire more people','to raise salaries'],
+   ans:1, why:'正确答案常用同义替换（lower expenses ≈ reduce costs），而含原词 workforce 的选项往往是干扰项。'},
+
+  {type:'read', reason:'过度推断（原文没直接依据）',
+   q:'原文：He arrived late and missed the first scene.\n下面哪项可以确定？',
+   opts:['他不喜欢这部电影','他错过了第一幕','他以后不会再迟到','电影很难看'],
+   ans:1, why:'只有“错过第一幕”是原文直接说的，其余都是脑补。'},
+
+  {type:'read', reason:'主体或因果被偷换',
+   q:'原文：Rain caused the game to be delayed.\n下面哪项与原文一致？',
+   opts:['The delay caused the rain.','The game caused the rain.','The rain delayed the game.','The players delayed the rain.'],
+   ans:2, why:'注意因果箭头：雨→延期，反过来就是偷换因果。'},
+
+  {type:'read', reason:'主旨题被细节带跑',
+   q:'一段文章讲了：作者先说通勤耗时，再说地铁拥挤，最后说很多人因此搬去郊区。\n主旨题最该选哪类选项？',
+   opts:['讲地铁很挤的选项','讲通勤问题如何影响人们居住选择的选项','讲郊区房价的选项','讲作者本人经历的选项'],
+   ans:1, why:'主旨要覆盖全文，而不是只概括某一段的细节。'},
+
+  /* ---------- 语法 ---------- */
+  {type:'gram', reason:'主谓一致找错主语',
+   q:'The number of students in our school ____ increased in recent years.',
+   opts:['have','has','are','were'],
+   ans:1, why:'真正的主语是 The number（数量），单数，所以用 has。students 只是修饰成分。'},
+
+  {type:'gram', reason:'主谓一致找错主语',
+   q:'A number of students ____ interested in the club.',
+   opts:['is','was','are','has'],
+   ans:2, why:'a number of = 许多，主语是 students（复数），用 are。和 the number of 正相反。'},
+
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'I remember ____ the door, but I am not sure.',
+   opts:['to lock','locking','locked','lock'],
+   ans:1, why:'remember doing = 记得做过（已发生）；remember to do = 记得去做（还没做）。'},
+
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'The problem needs ____ carefully.',
+   opts:['to solve','solving','solved','solve'],
+   ans:1, why:'need doing = need to be done，用主动形式表被动含义。'},
+
+  {type:'gram', reason:'时态混用',
+   q:'When I got home, my mother ____ dinner.',
+   opts:['cooks','is cooking','was cooking','has cooked'],
+   ans:2, why:'got home 是过去某点，那时正在做饭用过去进行时 was cooking。'},
+
+  {type:'gram', reason:'冠词 a/an/the 用错',
+   q:'He is ____ honest man.',
+   opts:['a','an','the','不填'],
+   ans:1, why:'看的是发音不是字母：honest 的 h 不发音，开头是元音音素，所以用 an。'},
+
+  {type:'gram', reason:'冠词 a/an/the 用错',
+   q:'____ sun rises in the east.',
+   opts:['A','An','The','不填'],
+   ans:2, why:'世界上独一无二的事物前用 the。'},
+
+  {type:'gram', reason:'词性混淆（success/succeed/successful）',
+   q:'His plan was a great ____.',
+   opts:['succeed','success','successful','successfully'],
+   ans:1, why:'a great + 名词，所以用 success。succeed 是动词，successful 是形容词。'},
+
+  {type:'gram', reason:'词性混淆（success/succeed/successful）',
+   q:'She ____ in passing the exam.',
+   opts:['success','successful','succeeded','successfully'],
+   ans:2, why:'主语后需要谓语动词，用 succeeded；后面 in doing 是固定搭配。'},
+
+  {type:'gram', reason:'固定搭配漏介词',
+   q:'We must listen ____ the teacher carefully.',
+   opts:['at','to','for','with'],
+   ans:1, why:'listen 是不及物动词，必须加 to 才能接宾语。'},
+
+  {type:'gram', reason:'固定搭配漏介词',
+   q:'Success depends ____ hard work.',
+   opts:['in','on','at','for'],
+   ans:1, why:'depend on 是固定搭配：依赖、取决于。'},
+
+  {type:'gram', reason:'形近词/近义词看错',
+   q:'The new rule will ____ all students.',
+   opts:['effect','affect','effort','afford'],
+   ans:1, why:'affect 是动词（影响）；effect 一般是名词（效果）。'},
+
+  {type:'gram', reason:'形近词/近义词看错',
+   q:'They decided to ____ the new method.',
+   opts:['adapt','adopt','adept','adopt to'],
+   ans:1, why:'adopt = 采纳；adapt = 适应/改编。两个词差一个字母，意思差很远。'},
+
+  {type:'gram', reason:'熟词僻义没认出来',
+   q:'The company will ____ 200 new workers this year.',
+   opts:['employ','use','hire','borrow'],
+   ans:2, why:'hire 指“雇人”；employ 也对但更正式。这里考的是别把 hire 只当成“租”。'},
+
+  /* ---------- 写作/翻译 ---------- */
+  {type:'write', reason:'句子间没连词，直接拼接',
+   q:'下面哪句正确？',
+   opts:['It was raining, we stayed home.','It was raining, so we stayed home.','It was raining, and we stayed home, so.','It was raining we stayed home.'],
+   ans:1, why:'两个完整句子不能只用逗号连接，必须加连词（so/because/and）。'},
+
+  {type:'write', reason:'and/but 连接不平行',
+   q:'下面哪句更规范？',
+   opts:['She likes reading, swimming and to travel.','She likes reading, swimming and traveling.','She likes to read, swimming and travel.','She likes read, swim and travel.'],
+   ans:1, why:'并列结构要形式一致（都用 -ing），这叫平行结构。'},
+
+  {type:'write', reason:'时态突然切换',
+   q:'Yesterday I went to the market and ____ some fruit.',
+   opts:['buy','bought','have bought','buying'],
+   ans:1, why:'and 连接的两个动作要时态一致，都用过去式。'},
+
+  {type:'write', reason:'中式表达直译',
+   q:'“我昨天很开心”最自然的英文是：',
+   opts:['I very happy yesterday.','I was very happy yesterday.','I yesterday very happy.','I am very happy yesterday.'],
+   ans:1, why:'中文可以省略“是”，英文必须有系动词 was。'},
+
+  {type:'write', reason:'中式表达直译',
+   q:'“好好学习，天天向上”最合适的译法是：',
+   opts:['Good good study, day day up.','Study hard and make progress every day.','Study good, up every day.','Hard study, day up.'],
+   ans:1, why:'逐字直译是中式英语的典型，要按英文的搭配和结构说。'},
+
+  {type:'write', reason:'冠词/单复数/介词错',
+   q:'下面哪句正确？',
+   opts:['I have many friend.','I have a lot of friends.','I have much friends.','I have many friends in here.'],
+   ans:1, why:'many 后面接可数名词复数；much 不接可数；in here 不通。'},
+
+  {type:'write', reason:'时态突然切换',
+   q:'下面哪段时态一致？',
+   opts:['He opens the door and walked in.','He opened the door and walked in.','He opens the door and walks in yesterday.','He opened the door and walks in.'],
+   ans:1, why:'讲过去发生的事，全段用过去式。'},
+
+  /* ---------- 词汇 ---------- */
+  {type:'vocab', reason:'搭配用错',
+   q:'We need to ____ a decision by Friday.',
+   opts:['do','make','take','have'],
+   ans:1, why:'make a decision 是固定搭配；take a decision 在美式里少见。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'Please pay attention ____ the details.',
+   opts:['on','to','at','for'],
+   ans:1, why:'pay attention to 固定搭配，介词是 to。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'The medicine had no ____ on him.',
+   opts:['affect','effect','effort','afford'],
+   ans:1, why:'have an effect on = 对……有影响，这里要名词 effect。'},
+
+  {type:'vocab', reason:'认识但想不起意思',
+   q:'The manager will ____ the report before Friday.',
+   opts:['review','renew','reveal','revert'],
+   ans:0, why:'review 在这里是“审阅”，不是“复习”；同一词在不同场景意思不同。'},
+
+  {type:'vocab', reason:'认识但想不起意思',
+   q:'He is a man of ____; you can trust him.',
+   opts:['word','words','a word','the word'],
+   ans:0, why:'a man of word = 守信用的人，是固定表达，别按字面理解。'},
+
+  {type:'vocab', reason:'拼写错',
+   q:'下面哪个拼写正确？',
+   opts:['seperate','separate','seperete','separat'],
+   ans:1, why:'separate 中间是 -par-，常见错拼是 seperate。'},
+
+  {type:'vocab', reason:'拼写错',
+   q:'下面哪个拼写正确？',
+   opts:['neccessary','necessary','necesary','necessery'],
+   ans:1, why:'necessary 是“一个 c，两个 s”。'},
+
+  {type:'vocab', reason:'这个词根本不认识',
+   q:'"The plan is feasible." 中 feasible 最接近的意思是：',
+   opts:['昂贵的','可行的','复杂的','危险的'],
+   ans:1, why:'feasible = 可行的、行得通的。'},
+  /* ============ 追加：公认的易混/难题型 ============ */
+
+  /* --- 形近词 --- */
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'The school ____ has announced a new rule.',
+   opts:['principle','principal','principally','principled'],
+   ans:1, why:'principal = 校长/主要的；principle = 原则。差一个字母，意思完全不同。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'I need to buy some ____ for the printer.',
+   opts:['stationary','stationery','station','situation'],
+   ans:1, why:'stationery = 文具（er 结尾像 paper）；stationary = 静止的。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'The desert is hot, but we still had ____ after dinner.',
+   opts:['desert','dessert','deserts','deserted'],
+   ans:1, why:'dessert = 甜点（两个 s，想吃更多）；desert = 沙漠/抛弃。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'She gave me some good ____ about the interview.',
+   opts:['advice','advise','advices','advises'],
+   ans:0, why:'advice 是不可数名词（建议）；advise 是动词（劝告）。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'The police ____ the thief at last.',
+   opts:['arrested','assisted','asserted','accessed'],
+   ans:0, why:'arrest = 逮捕；assist = 帮助；assert = 断言；access = 进入。四个词长得很像。'},
+
+  {type:'vocab', reason:'形近词/近义词看错',
+   q:'Please keep ____ during the exam.',
+   opts:['quite','quiet','quit','quietly'],
+   ans:1, why:'quiet = 安静的；quite = 相当；quit = 退出。'},
+
+  /* --- 固定搭配 + 介词 --- */
+  {type:'vocab', reason:'搭配用错',
+   q:'The team consists ____ five members.',
+   opts:['of','in','from','with'],
+   ans:0, why:'consist of = 由……组成；consist in = 在于（意思完全不同）。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'I am looking forward to ____ you again.',
+   opts:['see','seeing','saw','be seen'],
+   ans:1, why:'look forward to 的 to 是介词，后面接 -ing。这是最高频的坑之一。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'He is in charge ____ the project.',
+   opts:['of','for','with','on'],
+   ans:0, why:'in charge of = 负责；in the charge of = 由……负责，方向正好相反。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'We should be aware ____ the risks.',
+   opts:['of','to','for','about'],
+   ans:0, why:'be aware of = 意识到；aware 后面固定接 of。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'She ____ a big mistake in the report.',
+   opts:['did','made','took','had'],
+   ans:1, why:'make a mistake 是固定搭配，不用 do。'},
+
+  {type:'vocab', reason:'搭配用错',
+   q:'Let me ____ you a favor.',
+   opts:['make','do','give','take'],
+   ans:1, why:'do sb a favor = 帮某人一个忙；和 make 不搭。'},
+
+  /* --- 非谓语：remember/forget/stop/regret --- */
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'Don\'t forget ____ the lights before you leave.',
+   opts:['turning off','to turn off','turn off','turned off'],
+   ans:1, why:'forget to do = 忘了要做（还没做）；forget doing = 忘了做过。这里是“别忘了做”。'},
+
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'He stopped ____ two years ago.',
+   opts:['to smoke','smoking','smoke','smoked'],
+   ans:1, why:'stop doing = 停止做；stop to do = 停下来去做另一件事。'},
+
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'I regret ____ you that the plan was cancelled.',
+   opts:['telling','to tell','tell','told'],
+   ans:1, why:'regret to do = 遗憾地要告诉你（现在要做）；regret doing = 后悔做过。'},
+
+  {type:'gram', reason:'非谓语主动/被动搞错',
+   q:'The meeting ____ tomorrow will be important.',
+   opts:['holding','held','to be held','hold'],
+   ans:2, why:'会议“将被举行”，用不定式的被动 to be held 表示将来的被动。'},
+
+  /* --- 主谓一致 + 时态 --- */
+  {type:'gram', reason:'主谓一致找错主语',
+   q:'Neither the teacher nor the students ____ ready.',
+   opts:['is','are','was','has'],
+   ans:1, why:'neither...nor 遵循“就近原则”：靠近动词的是 students（复数），用 are。'},
+
+  {type:'gram', reason:'主谓一致找错主语',
+   q:'There ____ a pen and two books on the desk.',
+   opts:['is','are','have','has'],
+   ans:0, why:'there be 也遵循就近原则：离 be 最近的是 a pen（单数），用 is。'},
+
+  {type:'gram', reason:'时态混用',
+   q:'I ____ in this city since 2018.',
+   opts:['live','lived','have lived','am living'],
+   ans:2, why:'since + 时间点，表示从那时持续到现在，用现在完成时。'},
+
+  {type:'gram', reason:'时态混用',
+   q:'When he called, I ____ a shower.',
+   opts:['take','took','was taking','have taken'],
+   ans:2, why:'过去某一时刻正在做的事，用过去进行时。'},
+
+  /* --- 冠词：看发音不看字母 --- */
+  {type:'gram', reason:'冠词 a/an/the 用错',
+   q:'It took me ____ hour to finish the work.',
+   opts:['a','an','the','不填'],
+   ans:1, why:'hour 的 h 不发音，开头是元音，所以用 an。'},
+
+  {type:'gram', reason:'冠词 a/an/the 用错',
+   q:'He studies at ____ university in Beijing.',
+   opts:['a','an','the','不填'],
+   ans:0, why:'university 虽以 u 开头，但读音是 /juː/（辅音开头），所以用 a。'},
+
+  /* --- 阅读：转折与绝对化 --- */
+  {type:'read', reason:'过度推断（原文没直接依据）',
+   q:'原文：The plan looks good, but it costs too much.\n作者的态度最接近哪项？',
+   opts:['完全支持这个计划','认为计划有优点但成本是问题','认为计划毫无价值','没有表达任何态度'],
+   ans:1, why:'but 后面是重点：有优点，但成本高。别只看前半句。'},
+
+  {type:'read', reason:'范围被放大（可能→一定 / 部分→所有）',
+   q:'原文：Most students passed the test.\n下面哪项一定错？',
+   opts:['有些学生没通过','所有学生都通过了','大部分学生通过了','少数学生没通过'],
+   ans:1, why:'most（大多数）≠ all（全部）。说“所有都通过”就错了。'},
+
+  /* --- 写作：中式表达与平行 --- */
+  {type:'write', reason:'中式表达直译',
+   q:'“我很喜欢这个电影”最自然的英文是：',
+   opts:['I very like this movie.','I like this movie very much.','I very much like this movie very.','I am very like this movie.'],
+   ans:1, why:'very 不能直接修饰动词；要说 like ... very much。'},
+
+  {type:'write', reason:'中式表达直译',
+   q:'“他昨天没来上班”的英文是：',
+   opts:['He yesterday not come to work.','He didn\'t come to work yesterday.','He not came to work yesterday.','He didn\'t came to work yesterday.'],
+   ans:1, why:'否定要用助动词 didn\'t + 动词原形，时间状语放句末。'},
+
+  {type:'write', reason:'and/but 连接不平行',
+   q:'下面哪句符合平行结构？',
+   opts:['The job requires patience, carefulness and being responsible.','The job requires patience, carefulness and responsibility.','The job requires being patient, carefulness and responsible.','The job requires to be patient, careful and responsibility.'],
+   ans:1, why:'并列三个成分要用同一词性（都是名词）。'},
+
+
+];
+
+</script>
 <script>
 const KEY = 'err_book_v1';
 
@@ -140,18 +459,19 @@ function toast(msg){
 
 /* ============ 首页 ============ */
 function renderHome(){
-  window.__AT_ERR_HOME = true;
   const today = S.items.filter(x=> x.at >= Date.now() - 86400000).length;
   $("#cnt").textContent = '共 ' + S.items.length + ' 条';
   $("#view").innerHTML = `
     <h1>${today ? '今天又抓到 ' + today + ' 个陷阱' : '把错的题记下来'}</h1>
     <p class="sub">只记“我为什么错”，不抄题。一个月后就知道自己总栽在哪。</p>
 
-    <button class="btn primary" id="add">＋ 记一道错题</button>
+    <button class="btn primary" id="drill">⚡ 练一练（10 题）</button>
+    <button class="btn" id="add">＋ 记一道错题</button>
     <button class="btn" id="stats">📊 我的错因排行</button>
     <button class="btn ghost" id="list">📒 全部错题（${S.items.length}）</button>
     <button class="btn ghost" id="data">💾 备份 / 恢复</button>
   `;
+  if($("#drill")) $("#drill").onclick = startDrill;
   $("#add").onclick = ()=> renderAdd();
   $("#stats").onclick = ()=> renderStats();
   $("#list").onclick = ()=> renderList();
@@ -161,7 +481,6 @@ function renderHome(){
 /* ============ 记一道 ============ */
 let draft = null;
 function renderAdd(){
-  window.__AT_ERR_HOME = false;
   draft = {type:'read', reasons:[], stem:'', my:'', right:'', note:''};
   drawAdd();
 }
@@ -225,7 +544,6 @@ function drawAdd(){
 
 /* ============ 排行 ============ */
 function renderStats(){
-  window.__AT_ERR_HOME = false;
   const count = {};
   const byType = {};
   S.items.forEach(it=>{
@@ -257,7 +575,6 @@ function renderStats(){
 
 /* ============ 列表 ============ */
 function renderList(){
-  window.__AT_ERR_HOME = false;
   $("#view").innerHTML = `
     <h1>全部错题</h1>
     <p class="sub">只记“为什么错”，翻起来才快。</p>
@@ -281,7 +598,6 @@ function renderList(){
 
 /* ============ 备份 ============ */
 function renderData(){
-  window.__AT_ERR_HOME = false;
   $("#view").innerHTML = `
     <h1>备份 / 恢复</h1>
     <p class="sub">数据只存在这台设备，建议每周导一次。</p>
@@ -317,12 +633,80 @@ function renderData(){
   $("#back").onclick = renderHome;
 }
 
-// 左上角返回：首页回门户，其它页回错题本首页
-window.__AT_ERR_HOME = false;
-document.getElementById('errBack').onclick = function(){
-  if(window.__AT_ERR_HOME){ location.href = '../'; return; }
-  renderHome();
-};
+
+/* ============ 练一练 ============ */
+let drill = null;
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function startDrill(){
+  const pool = shuffle(BANK.slice());
+  drill = { pool: pool.slice(0, Math.min(10, pool.length)), idx: 0, right: 0, wrong: [] };
+  renderDrill();
+}
+function renderDrill(){
+  if(!drill) return;
+  if(drill.idx >= drill.pool.length){
+    const total = drill.pool.length, r = drill.right, w = drill.wrong.length;
+    $("#view").innerHTML = `
+      <h1>这一轮做完了</h1>
+      <p class="sub">答对 ${r} / ${total} 题</p>
+      ${w ? `<div class="card"><b style="color:#ffc857">${w} 道错了</b>
+        <div class="muted" style="margin-top:6px">把它们记进错因，下次排行榜才看得出来。</div></div>
+        <button class="btn primary" id="saveWrong">把错的 ${w} 道记进错因</button>` : '<p class="sub">全对，今天状态不错。</p>'}
+      <button class="btn" id="again">再来一轮</button>
+      <button class="btn ghost" id="back">返回</button>
+    `;
+    if($("#saveWrong")) $("#saveWrong").onclick = ()=>{
+      drill.wrong.forEach(q=>{
+        S.items.unshift({
+          id: Date.now() + '' + Math.floor(Math.random()*1000),
+          type: q.type,
+          reasons: [q.reason],
+          stem: q.q,
+          my: '', right: '',
+          note: q.why,
+          at: Date.now()
+        });
+      });
+      save(); toast('已记入 ' + drill.wrong.length + ' 条'); renderHome();
+    };
+    $("#again").onclick = startDrill;
+    $("#back").onclick = renderHome;
+    return;
+  }
+
+  const q = drill.pool[drill.idx];
+  $("#view").innerHTML = `
+    <div class="muted" style="font-size:13px">第 ${drill.idx+1} / ${drill.pool.length} 题</div>
+    <h1 style="font-size:19px;line-height:1.6;white-space:pre-line;margin:10px 0 16px">${esc(q.q)}</h1>
+    <div id="opts">${q.opts.map((o,i)=>`<button class="btn" data-o="${i}" style="text-align:left">${'ABCD'[i]}. ${esc(o)}</button>`).join('')}</div>
+    <div id="fb"></div>
+    <button class="btn ghost hide" id="next">下一题 →</button>
+  `;
+  document.querySelectorAll('[data-o]').forEach(b=> b.onclick = ()=>{
+    const pick = Number(b.dataset.o);
+    const ok = pick === q.ans;
+    document.querySelectorAll('[data-o]').forEach(x=> x.disabled = true);
+    b.style.borderColor = ok ? '#3ddc97' : '#ff6b6b';
+    b.style.background = ok ? 'rgba(61,220,151,.12)' : 'rgba(255,107,107,.12)';
+    if(!ok){
+      const rightBtn = document.querySelector(`[data-o="${q.ans}"]`);
+      if(rightBtn){ rightBtn.style.borderColor = '#3ddc97'; rightBtn.style.background = 'rgba(61,220,151,.12)'; }
+      drill.wrong.push(q);
+    } else {
+      drill.right++;
+    }
+    $("#fb").innerHTML = `<div class="card" style="margin-top:14px;border-color:${ok?'#24533e':'#5a2a2a'}">
+      <b style="color:${ok?'#3ddc97':'#ff8a8a'}">${ok?'答对了':'答错了'}</b>
+      <div class="muted" style="margin-top:6px">错因：${esc(q.reason)}</div>
+      <div style="margin-top:8px;font-size:14px">${esc(q.why)}</div>
+    </div>`;
+    $("#next").classList.remove('hide');
+    $("#next").onclick = ()=>{ drill.idx++; renderDrill(); };
+  });
+}
 
 renderHome();
 </script>
