@@ -69,6 +69,102 @@
   <main id="view"></main>
 </div>
 <script>
+/* ===== 反馈特效：音效 + 烟花 + 弹出字 ===== */
+(function(){
+  var AC = null;
+  function ac(){
+    if(!AC){ try{ AC = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
+    if(AC && AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  function tone(freq, start, dur, type, vol){
+    var c = ac(); if(!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, c.currentTime + start);
+    g.gain.linearRampToValueAtTime(vol || 0.14, c.currentTime + start + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + start + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + 0.05);
+  }
+  window.sfxOk = function(){
+    tone(523.25, 0, 0.16, 'triangle', 0.14);
+    tone(659.25, 0.08, 0.16, 'triangle', 0.14);
+    tone(783.99, 0.16, 0.24, 'triangle', 0.13);
+  };
+  window.sfxBad = function(){
+    tone(220, 0, 0.18, 'sawtooth', 0.10);
+    tone(164.81, 0.12, 0.26, 'sawtooth', 0.09);
+  };
+  window.sfxTap = function(){ tone(880, 0, 0.07, 'sine', 0.07); };
+
+  /* 烟花 */
+  var FW = null;
+  window.fireworks = function(n){
+    try{
+      if(!FW){
+        var c = document.createElement('canvas');
+        c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9998';
+        document.body.appendChild(c);
+        FW = {c: c, ctx: c.getContext('2d'), parts: []};
+        var fit = function(){ c.width = innerWidth; c.height = innerHeight; };
+        fit(); window.addEventListener('resize', fit);
+        (function loop(){
+          var x = FW.ctx, W = FW.c.width, H = FW.c.height;
+          x.clearRect(0,0,W,H);
+          for(var i = FW.parts.length - 1; i >= 0; i--){
+            var p = FW.parts[i];
+            p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life--;
+            if(p.life <= 0){ FW.parts.splice(i,1); continue; }
+            x.globalAlpha = Math.max(0, p.life / p.max);
+            x.fillStyle = p.color;
+            x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.284); x.fill();
+          }
+          x.globalAlpha = 1;
+          requestAnimationFrame(loop);
+        })();
+      }
+      var W = FW.c.width, H = FW.c.height;
+      var colors = ['#4ea8de','#3ddc97','#ffc857','#ff8ab3','#a78bfa'];
+      for(var k = 0; k < (n || 2); k++){
+        var cx = W * (0.25 + Math.random() * 0.5);
+        var cy = H * (0.18 + Math.random() * 0.25);
+        for(var i = 0; i < 26; i++){
+          var ang = Math.random() * 6.284, sp = 1.5 + Math.random() * 4;
+          FW.parts.push({
+            x: cx, y: cy, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp,
+            r: 1.5 + Math.random()*1.8, life: 34 + Math.random()*22,
+            max: 56, color: colors[(Math.random()*colors.length)|0]
+          });
+        }
+      }
+    }catch(e){}
+  };
+
+  /* 弹出字 */
+  window.popBadge = function(ok){
+    try{
+      var d = document.createElement('div');
+      d.textContent = ok ? '答对了' : '答错了';
+      d.style.cssText = 'position:fixed;left:50%;top:34%;transform:translate(-50%,-50%);' +
+        'font-size:30px;font-weight:800;pointer-events:none;z-index:9999;' +
+        'color:' + (ok ? '#3ddc97' : '#ff6b6b') + ';text-shadow:0 2px 16px rgba(0,0,0,.55);' +
+        'transition:all .7s ease-out;opacity:1';
+      document.body.appendChild(d);
+      requestAnimationFrame(function(){
+        d.style.transform = 'translate(-50%,-120%) scale(1.15)';
+        d.style.opacity = '0';
+      });
+      setTimeout(function(){ d.remove(); }, 800);
+    }catch(e){}
+  };
+
+  // 首次触摸解锁音频（手机必须）
+  document.addEventListener('pointerdown', function(){ ac(); }, { once: true });
+})();
+</script>
+<script>
 /* 内置小题库：每道题都对应一个错因，做错可直接归因 */
 /* 内置小题库：每道题都对应一个错因，做错可直接归因 */
 const BANK = [
@@ -536,6 +632,7 @@ function drawAdd(){
       at: Date.now()
     });
     save();
+    if(window.sfxTap) window.sfxTap();
     toast('记下了');
     renderHome();
   };
