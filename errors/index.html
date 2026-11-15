@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1216">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png">
+<title>错题归因本</title>
+<style>
+  :root{
+    --bg:#0f1216; --card:#171c22; --line:#252c35; --fg:#e8edf3; --dim:#8b96a4;
+    --acc:#4ea8de; --ok:#3ddc97; --bad:#ff6b6b; --warn:#ffc857;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);color:var(--fg);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    display:flex;flex-direction:column;align-items:center;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  #app{width:100%;max-width:560px;min-height:100%;display:flex;flex-direction:column;padding:20px 16px 32px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .title{font-size:15px;letter-spacing:.08em;color:var(--dim)}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .muted{color:var(--dim);font-size:13px}
+  .btn{
+    display:block;width:100%;padding:15px;border-radius:12px;border:1px solid var(--line);
+    background:#1d242c;color:var(--fg);font-size:16px;cursor:pointer;margin-top:10px;font-family:inherit;
+  }
+  .btn.primary{background:var(--acc);border-color:var(--acc);color:#07121a;font-weight:600}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:11px;font-size:14px}
+  .chip{
+    display:inline-block;padding:9px 13px;border-radius:99px;border:1px solid var(--line);
+    background:#1a2027;margin:4px 6px 4px 0;font-size:14px;cursor:pointer;
+  }
+  .chip.on{border-color:var(--acc);background:#202b36;color:#cfe9ff}
+  input,textarea{
+    width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#1a2027;
+    color:var(--fg);font-size:16px;font-family:inherit;outline:none;margin:6px 0 2px;
+  }
+  input:focus,textarea:focus{border-color:var(--acc)}
+  textarea{min-height:70px;resize:vertical}
+  .label{font-size:13px;color:var(--dim);margin-top:12px;display:block}
+  .barrow{margin:10px 0}
+  .barrow .name{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+  .bar{height:9px;background:#20272f;border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--acc)}
+  .item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#141a20}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim);margin-right:6px}
+  .del{float:right;color:#ff8a8a;background:none;border:none;font-size:13px;cursor:pointer}
+  .empty{color:var(--dim);text-align:center;padding:20px;font-size:14px}
+  .hide{display:none!important}
+  footer{margin-top:auto;padding-top:16px;text-align:center;color:#4a5461;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title">错题归因本</div>
+    <div class="muted" id="cnt"></div>
+  </header>
+  <main id="view"></main>
+</div>
+<script>
+const KEY = 'err_book_v1';
+
+/* 错因库：来自那份自查框架 */
+const TYPES = {
+  read: {name:'阅读', reasons:[
+    '把阅读当翻译，没抓作者意图',
+    '只看原词匹配就选了',
+    '过度推断（原文没直接依据）',
+    '范围被放大（可能→一定 / 部分→所有）',
+    '主体或因果被偷换',
+    '主旨题被细节带跑',
+  ]},
+  gram: {name:'语法', reasons:[
+    '主谓一致找错主语',
+    '非谓语主动/被动搞错',
+    '时态混用',
+    '冠词 a/an/the 用错',
+    '词性混淆（success/succeed/successful）',
+    '固定搭配漏介词',
+    '形近词/近义词看错',
+    '熟词僻义没认出来',
+  ]},
+  write: {name:'写作/翻译', reasons:[
+    '句子间没连词，直接拼接',
+    'and/but 连接不平行',
+    '时态突然切换',
+    '冠词/单复数/介词错',
+    '中式表达直译',
+  ]},
+  vocab: {name:'词汇', reasons:[
+    '这个词根本不认识',
+    '认识但想不起意思',
+    '拼写错',
+    '搭配用错',
+  ]},
+};
+
+function blank(){ return {items:[], lastAt:0}; }
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return Object.assign(blank(), s || {}); }catch(e){ return blank(); }
+}
+let S = load();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+const $ = (s)=> document.querySelector(s);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function todayStr(){
+  const d = new Date(Date.now() - 4*3600*1000);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function toast(msg){
+  const d = document.createElement('div');
+  d.textContent = msg;
+  d.style.cssText = 'position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#20272f;color:#e8edf3;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99';
+  document.body.appendChild(d);
+  setTimeout(()=> d.remove(), 1600);
+}
+
+/* ============ 首页 ============ */
+function renderHome(){
+  const today = S.items.filter(x=> x.at >= Date.now() - 86400000).length;
+  $("#cnt").textContent = '共 ' + S.items.length + ' 条';
+  $("#view").innerHTML = `
+    <h1>${today ? '今天又抓到 ' + today + ' 个陷阱' : '把错的题记下来'}</h1>
+    <p class="sub">只记“我为什么错”，不抄题。一个月后就知道自己总栽在哪。</p>
+
+    <button class="btn primary" id="add">＋ 记一道错题</button>
+    <button class="btn" id="stats">📊 我的错因排行</button>
+    <button class="btn ghost" id="list">📒 全部错题（${S.items.length}）</button>
+    <button class="btn ghost" id="data">💾 备份 / 恢复</button>
+  `;
+  $("#add").onclick = ()=> renderAdd();
+  $("#stats").onclick = ()=> renderStats();
+  $("#list").onclick = ()=> renderList();
+  $("#data").onclick = ()=> renderData();
+}
+
+/* ============ 记一道 ============ */
+let draft = null;
+function renderAdd(){
+  draft = {type:'read', reasons:[], stem:'', my:'', right:'', note:''};
+  drawAdd();
+}
+function drawAdd(){
+  const t = draft.type;
+  $("#view").innerHTML = `
+    <h1>记一道错题</h1>
+    <p class="sub">先选题型，再点错因（可多选）。</p>
+
+    <span class="label">题型</span>
+    <div id="types">${Object.keys(TYPES).map(k=>
+      `<span class="chip ${draft.type===k?'on':''}" data-t="${k}">${TYPES[k].name}</span>`).join('')}</div>
+
+    <span class="label">我为什么错（可多选）</span>
+    <div id="reasons">${TYPES[t].reasons.map((r,i)=>
+      `<span class="chip ${draft.reasons.includes(i)?'on':''}" data-r="${i}">${esc(r)}</span>`).join('')}</div>
+
+    <span class="label">定位句 / 关键原文（可选）</span>
+    <textarea id="stem" placeholder="把那句关键原文粘进来">${esc(draft.stem)}</textarea>
+
+    <span class="label">我选了什么 / 我写了什么（可选）</span>
+    <input id="my" value="${esc(draft.my)}" placeholder="比如：选了 B">
+
+    <span class="label">正确答案（可选）</span>
+    <input id="right" value="${esc(draft.right)}" placeholder="比如：C，因为原文说 may">
+
+    <span class="label">一句话备注（可选）</span>
+    <input id="note" value="${esc(draft.note)}" placeholder="下次看到这类要提醒自己什么">
+
+    <button class="btn primary" id="saveBtn" style="margin-top:16px">记下来</button>
+    <button class="btn ghost" id="back">返回</button>
+  `;
+  document.querySelectorAll('[data-t]').forEach(el=> el.onclick = ()=>{
+    draft.type = el.dataset.t; draft.reasons = []; drawAdd();
+  });
+  document.querySelectorAll('[data-r]').forEach(el=> el.onclick = ()=>{
+    const i = Number(el.dataset.r);
+    const k = draft.reasons.indexOf(i);
+    if(k >= 0) draft.reasons.splice(k,1); else draft.reasons.push(i);
+    el.classList.toggle('on');
+  });
+  $("#saveBtn").onclick = ()=>{
+    draft.stem = $("#stem").value.trim();
+    draft.my = $("#my").value.trim();
+    draft.right = $("#right").value.trim();
+    draft.note = $("#note").value.trim();
+    if(!draft.reasons.length && !draft.stem && !draft.note){ toast('至少选一个错因，或写点内容'); return; }
+    S.items.unshift({
+      id: Date.now() + '' + Math.floor(Math.random()*1000),
+      type: draft.type,
+      reasons: draft.reasons.map(i=> TYPES[draft.type].reasons[i]),
+      stem: draft.stem, my: draft.my, right: draft.right, note: draft.note,
+      at: Date.now()
+    });
+    save();
+    toast('记下了');
+    renderHome();
+  };
+  $("#back").onclick = renderHome;
+}
+
+/* ============ 排行 ============ */
+function renderStats(){
+  const count = {};
+  const byType = {};
+  S.items.forEach(it=>{
+    byType[it.type] = (byType[it.type] || 0) + 1;
+    it.reasons.forEach(r=> count[r] = (count[r] || 0) + 1);
+  });
+  const rows = Object.entries(count).sort((a,b)=> b[1]-a[1]).slice(0, 10);
+  const max = rows.length ? rows[0][1] : 1;
+
+  $("#view").innerHTML = `
+    <h1>我的错因排行</h1>
+    <p class="sub">这个榜越靠前，越是你真正要治的地方。</p>
+    ${rows.length ? rows.map(([r,c])=> `
+      <div class="barrow">
+        <div class="name"><span>${esc(r)}</span><b>${c}</b></div>
+        <div class="bar"><i style="width:${Math.round(c/max*100)}%"></i></div>
+      </div>`).join('') : '<div class="empty">还没有记录。先记两三道错题。</div>'}
+
+    ${Object.keys(byType).length ? `<div class="card" style="margin-top:16px">
+      <div class="muted">按题型</div>
+      <div style="margin-top:8px">${Object.entries(byType).map(([k,v])=>
+        `<span class="tag">${TYPES[k] ? TYPES[k].name : k} ${v}</span>`).join('')}</div>
+    </div>` : ''}
+
+    <button class="btn ghost" id="back" style="margin-top:16px">返回</button>
+  `;
+  $("#back").onclick = renderHome;
+}
+
+/* ============ 列表 ============ */
+function renderList(){
+  $("#view").innerHTML = `
+    <h1>全部错题</h1>
+    <p class="sub">只记“为什么错”，翻起来才快。</p>
+    ${S.items.length ? S.items.map(it=> `
+      <div class="item">
+        <button class="del" data-del="${it.id}">删除</button>
+        <div class="muted" style="font-size:12px">${TYPES[it.type] ? TYPES[it.type].name : ''} · ${new Date(it.at).toLocaleDateString('zh-CN')}</div>
+        ${it.reasons.length ? `<div style="margin-top:6px">${it.reasons.map(r=>`<span class="tag">${esc(r)}</span>`).join('')}</div>` : ''}
+        ${it.stem ? `<div style="margin-top:8px;font-size:14px">${esc(it.stem)}</div>` : ''}
+        ${it.my || it.right ? `<div class="muted" style="margin-top:6px">我：${esc(it.my || '—')} ／ 对：${esc(it.right || '—')}</div>` : ''}
+        ${it.note ? `<div style="margin-top:6px;color:#ffc857;font-size:14px">记：${esc(it.note)}</div>` : ''}
+      </div>`).join('') : '<div class="empty">还没有记录。</div>'}
+    <button class="btn ghost" id="back" style="margin-top:12px">返回</button>
+  `;
+  document.querySelectorAll('[data-del]').forEach(b=> b.onclick = ()=>{
+    S.items = S.items.filter(x=> x.id !== b.dataset.del);
+    save(); renderList();
+  });
+  $("#back").onclick = renderHome;
+}
+
+/* ============ 备份 ============ */
+function renderData(){
+  $("#view").innerHTML = `
+    <h1>备份 / 恢复</h1>
+    <p class="sub">数据只存在这台设备，建议每周导一次。</p>
+    <button class="btn primary" id="exp">导出备份（JSON）</button>
+    <button class="btn" id="imp">导入备份</button>
+    <button class="btn ghost" id="back" style="margin-top:16px">返回</button>
+  `;
+  $("#exp").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '错题归因-' + todayStr() + '.json';
+    a.click();
+  };
+  $("#imp").onclick = ()=>{
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = ()=>{
+      const f = inp.files[0]; if(!f) return;
+      const r = new FileReader();
+      r.onload = ()=>{
+        try{
+          const d = JSON.parse(String(r.result));
+          if(!d || !Array.isArray(d.items)) throw new Error('格式不对');
+          S = Object.assign(blank(), d);
+          save(); toast('导入成功：' + S.items.length + ' 条'); renderHome();
+        }catch(e){ toast('导入失败：' + e.message); }
+      };
+      r.readAsText(f, 'utf-8');
+    };
+    inp.click();
+  };
+  $("#back").onclick = renderHome;
+}
+
+renderHome();
+</script>
+</body>
+</html>
