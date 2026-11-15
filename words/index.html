@@ -18,9 +18,9 @@
     });
   }
 </script>
-<meta name="app-build" content="20261115-1442">
+<meta name="app-build" content="20261115-1530">
 <script>
-window.__BUILD = '20261115-1442';
+window.__BUILD = '20261115-1530';
 (function(){
   function showUpdateBar(){
     if(document.getElementById('updBar')) return;
@@ -950,7 +950,8 @@ function setBack(on){
 }
 
 function renderHome(){
-  setBack(false);
+  setBack(true);
+  window.__AT_TOOL_HOME = true;
   const st = stats();
   const due = dueList().length;
   const nr = newRemaining();
@@ -1426,6 +1427,7 @@ function pickType(word, st){
 
 function renderCard(){
   setBack(true);
+  window.__AT_TOOL_HOME = false;
   if(!session){ renderHome(); return; }
   if(session.idx >= session.queue.length){ return renderSummary(); }
   if(optKeys){ document.removeEventListener('keydown', optKeys); optKeys = null; }
@@ -1847,6 +1849,7 @@ function advanceSession(){
 
 function renderSummary(){
   setBack(true);
+  window.__AT_TOOL_HOME = false;
   const st = stats();
   const wasReview = session && session.review;
   // 睡前总复习：只要覆盖了今天全部的词，也算“今日回顾完成”（但不占 3 次配额）
@@ -1950,6 +1953,7 @@ function renderSummary(){
 
 function renderStats(){
   setBack(true);
+  window.__AT_TOOL_HOME = false;
   const st = stats();
   $("#view").innerHTML = `
     <h1>统计</h1>
@@ -2003,6 +2007,7 @@ function renderStats(){
 
 function renderSettings(){
   setBack(true);
+  window.__AT_TOOL_HOME = false;
   $("#view").innerHTML = `
     <h1>设置</h1>
 
@@ -2235,6 +2240,7 @@ document.addEventListener('pointerdown', ()=>{ ac(); }, { once: true });
 // 左上角返回：保留当前进度，直接回首页
 document.addEventListener('click', (e)=>{
   if(e.target && e.target.id === 'navBack'){
+    if(window.__AT_TOOL_HOME){ location.href = '../'; return; }
     if(session) saveSession();
     renderHome();
   }

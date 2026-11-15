@@ -57,12 +57,23 @@
   .del{float:right;color:#ff8a8a;background:none;border:none;font-size:13px;cursor:pointer}
   .empty{color:var(--dim);text-align:center;padding:20px;font-size:14px}
   .hide{display:none!important}
+  header{position:relative}
+  .navback{
+    position:absolute;left:-4px;top:50%;transform:translateY(-50%);
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+    background:transparent;color:var(--fg);font-size:22px;line-height:1;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0 0 2px;
+    font-family:inherit;
+  }
+  .navback:active{background:#20272f}
+  header .title{margin-left:40px}
   footer{margin-top:auto;padding-top:16px;text-align:center;color:#4a5461;font-size:12px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
+    <button class="navback" id="errBack" aria-label="返回">‹</button>
     <div class="title">错题归因本</div>
     <div class="muted" id="cnt"></div>
   </header>
@@ -129,6 +140,7 @@ function toast(msg){
 
 /* ============ 首页 ============ */
 function renderHome(){
+  window.__AT_ERR_HOME = true;
   const today = S.items.filter(x=> x.at >= Date.now() - 86400000).length;
   $("#cnt").textContent = '共 ' + S.items.length + ' 条';
   $("#view").innerHTML = `
@@ -149,6 +161,7 @@ function renderHome(){
 /* ============ 记一道 ============ */
 let draft = null;
 function renderAdd(){
+  window.__AT_ERR_HOME = false;
   draft = {type:'read', reasons:[], stem:'', my:'', right:'', note:''};
   drawAdd();
 }
@@ -212,6 +225,7 @@ function drawAdd(){
 
 /* ============ 排行 ============ */
 function renderStats(){
+  window.__AT_ERR_HOME = false;
   const count = {};
   const byType = {};
   S.items.forEach(it=>{
@@ -243,6 +257,7 @@ function renderStats(){
 
 /* ============ 列表 ============ */
 function renderList(){
+  window.__AT_ERR_HOME = false;
   $("#view").innerHTML = `
     <h1>全部错题</h1>
     <p class="sub">只记“为什么错”，翻起来才快。</p>
@@ -266,6 +281,7 @@ function renderList(){
 
 /* ============ 备份 ============ */
 function renderData(){
+  window.__AT_ERR_HOME = false;
   $("#view").innerHTML = `
     <h1>备份 / 恢复</h1>
     <p class="sub">数据只存在这台设备，建议每周导一次。</p>
@@ -300,6 +316,13 @@ function renderData(){
   };
   $("#back").onclick = renderHome;
 }
+
+// 左上角返回：首页回门户，其它页回错题本首页
+window.__AT_ERR_HOME = false;
+document.getElementById('errBack').onclick = function(){
+  if(window.__AT_ERR_HOME){ location.href = '../'; return; }
+  renderHome();
+};
 
 renderHome();
 </script>
