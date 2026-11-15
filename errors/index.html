@@ -88,16 +88,78 @@
     o.connect(g); g.connect(c.destination);
     o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + 0.05);
   }
-  window.sfxOk = function(){
-    tone(523.25, 0, 0.16, 'triangle', 0.14);
-    tone(659.25, 0.08, 0.16, 'triangle', 0.14);
-    tone(783.99, 0.16, 0.24, 'triangle', 0.13);
-  };
-  window.sfxBad = function(){
-    tone(220, 0, 0.18, 'sawtooth', 0.10);
-    tone(164.81, 0.12, 0.26, 'sawtooth', 0.09);
-  };
-  window.sfxTap = function(){ tone(880, 0, 0.07, 'sine', 0.07); };
+
+  /* ==== 音效：生成 WAV 用 <audio> 播（比 Web Audio 稳） ==== */
+  function renderTones(notes, sr, dur){
+    var n = Math.floor(sr * dur);
+    var a = new Float32Array(n);
+    for(var k = 0; k < notes.length; k++){
+      var nt = notes[k];
+      var st = Math.floor(nt.t * sr);
+      var len = Math.floor(nt.d * sr);
+      for(var i = 0; i < len && st + i < n; i++){
+        var tt = i / sr;
+        var env = Math.min(1, tt / 0.008) * Math.exp(-tt * 5.5);
+        var v = Math.sin(2 * Math.PI * nt.f * tt);
+        if(nt.h) v += 0.35 * Math.sin(4 * Math.PI * nt.f * tt);
+        a[st + i] += v * env * (nt.v || 0.3);
+      }
+    }
+    return a;
+  }
+  function wavDataUri(samples, sr){
+    var len = samples.length;
+    var buf = new ArrayBuffer(44 + len * 2);
+    var v = new DataView(buf);
+    function wr(o, s){ for(var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+    wr(0,'RIFF'); v.setUint32(4, 36 + len*2, true); wr(8,'WAVE'); wr(12,'fmt ');
+    v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+    wr(36,'data'); v.setUint32(40, len*2, true);
+    for(var i = 0; i < len; i++){
+      var x = Math.max(-1, Math.min(1, samples[i]));
+      v.setInt16(44 + i*2, x * 32767, true);
+    }
+    var bytes = new Uint8Array(buf);
+    var bin = '';
+    for(var j = 0; j < bytes.length; j++) bin += String.fromCharCode(bytes[j]);
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+  var _cache = {};
+  function okWav(){
+    if(_cache.ok) return _cache.ok;
+    _cache.ok = wavDataUri(renderTones([
+      {f:523.25, t:0.00, d:0.22, v:0.30},
+      {f:659.25, t:0.07, d:0.22, v:0.30},
+      {f:783.99, t:0.14, d:0.22, v:0.30},
+      {f:1046.50, t:0.21, d:0.34, v:0.32}
+    ], 22050, 0.75), 22050);
+    return _cache.ok;
+  }
+  function badWav(){
+    if(_cache.bad) return _cache.bad;
+    _cache.bad = wavDataUri(renderTones([
+      {f:196.00, t:0.00, d:0.18, v:0.34, h:1},
+      {f:146.83, t:0.14, d:0.30, v:0.34, h:1}
+    ], 22050, 0.55), 22050);
+    return _cache.bad;
+  }
+  function playWav(uri){
+    try{
+      var a = new Audio(uri);
+      a.volume = 1;
+      a.muted = false;
+      var pr = a.play();
+      if(pr && pr.catch) pr.catch(function(err){
+        window.__soundErr = (err && err.name) || 'blocked';
+      });
+      window.__lastAudio = a;
+    }catch(e){ window.__soundErr = 'throw'; }
+  }
+
+  window.sfxOk = function(){ playWav(okWav()); };
+  window.sfxBad = function(){ playWav(badWav()); };
+  window.sfxTap = function(){ playWav(okWav()); };
 
   /* 烟花 */
   var FW = null;
@@ -566,7 +628,16 @@ function renderHome(){
     <button class="btn" id="stats">📊 我的错因排行</button>
     <button class="btn ghost" id="list">📒 全部错题（${S.items.length}）</button>
     <button class="btn ghost" id="data">💾 备份 / 恢复</button>
+    <button class="btn ghost" id="sfxTest">🔊 测试音效</button>
   `;
+  if($("#sfxTest")) $("#sfxTest").onclick = ()=>{
+    window.__soundErr = null;
+    if(window.sfxOk) window.sfxOk();
+    setTimeout(()=>{
+      if(window.__soundErr) toast('播放失败：' + window.__soundErr);
+      else toast('已播放（没听到就是被静音了）');
+    }, 700);
+  };
   if($("#drill")) $("#drill").onclick = startDrill;
   $("#add").onclick = ()=> renderAdd();
   $("#stats").onclick = ()=> renderStats();
@@ -792,8 +863,13 @@ function renderDrill(){
       const rightBtn = document.querySelector(`[data-o="${q.ans}"]`);
       if(rightBtn){ rightBtn.style.borderColor = '#3ddc97'; rightBtn.style.background = 'rgba(61,220,151,.12)'; }
       drill.wrong.push(q);
+      if(window.sfxBad){ try{ window.sfxBad(); }catch(e){} }
+      if(window.popBadge){ try{ window.popBadge(false); }catch(e){} }
     } else {
       drill.right++;
+      if(window.sfxOk){ try{ window.sfxOk(); }catch(e){} }
+      if(window.fireworks){ try{ window.fireworks(3); }catch(e){} }
+      if(window.popBadge){ try{ window.popBadge(true); }catch(e){} }
     }
     $("#fb").innerHTML = `<div class="card" style="margin-top:14px;border-color:${ok?'#24533e':'#5a2a2a'}">
       <b style="color:${ok?'#3ddc97':'#ff8a8a'}">${ok?'答对了':'答错了'}</b>
