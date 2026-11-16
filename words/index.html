@@ -10,17 +10,10 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png">
-<title>背单词 · 分享版</title>
+<title>背单词</title>
+<meta name="app-build" content="20261116-2313">
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
-  }
-</script>
-<meta name="app-build" content="20261115-2130">
-<script>
-window.__BUILD = '20261115-2130';
+window.__BUILD = '20261116-2313';
 (function(){
   function showUpdateBar(){
     if(document.getElementById('updBar')) return;
@@ -47,6 +40,11 @@ window.__BUILD = '20261115-2130';
   window.addEventListener('load', function(){ setTimeout(function(){ checkUpdate(true); }, 1800); });
   setInterval(function(){ checkUpdate(true); }, 5 * 60 * 1000);
 })();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
 </script>
 <style>
   :root{
@@ -185,6 +183,126 @@ window.__BUILD = '20261115-2130';
 <script>
 /* ============ 词库 A：游戏英语 120 词 ============ */
 const GAME = [
+{w:'save',p:'seɪv',m:'v. 保存（存档）',e:'Save your progress before the boss.'},
+{w:'load',p:'ləʊd',m:'v. 载入（读档）',e:'Load the last save file.'},
+{w:'quest',p:'kwest',m:'n. 任务',e:'Accept the main quest.'},
+{w:'mission',p:'ˈmɪʃn',m:'n. 任务；关卡',e:'This mission is too hard.'},
+{w:'objective',p:'əbˈdʒektɪv',m:'n. 目标（任务目标）',e:'Reach the objective on the map.'},
+{w:'inventory',p:'ˈɪnvəntri',m:'n. 背包；物品栏',e:'Your inventory is full.'},
+{w:'item',p:'ˈaɪtəm',m:'n. 物品',e:'Use this item to heal.'},
+{w:'equip',p:'ɪˈkwɪp',m:'v. 装备',e:'Equip the new sword.'},
+{w:'unequip',p:'ˌʌnɪˈkwɪp',m:'v. 卸下装备',e:'Unequip the heavy armor.'},
+{w:'weapon',p:'ˈwepən',m:'n. 武器',e:'This weapon has high damage.'},
+{w:'armor',p:'ˈɑːmə',m:'n. 护甲',e:'Your armor reduces damage.'},
+{w:'shield',p:'ʃiːld',m:'n. 盾牌',e:'Raise your shield to block.'},
+{w:'damage',p:'ˈdæmɪdʒ',m:'n./v. 伤害',e:'The attack deals 50 damage.'},
+{w:'attack',p:'əˈtæk',m:'v./n. 攻击',e:'Attack the enemy from behind.'},
+{w:'defense',p:'dɪˈfens',m:'n. 防御',e:'This ring adds defense.'},
+{w:'health',p:'helθ',m:'n. 生命值',e:'Your health is low, drink a potion.'},
+{w:'stamina',p:'ˈstæmɪnə',m:'n. 体力',e:'Sprinting uses stamina.'},
+{w:'mana',p:'ˈmɑːnə',m:'n. 法力值',e:'The spell costs 20 mana.'},
+{w:'heal',p:'hiːl',m:'v. 治疗；回复',e:'This herb heals you slowly.'},
+{w:'restore',p:'rɪˈstɔː',m:'v. 恢复',e:'Restore your health at the shrine.'},
+{w:'buff',p:'bʌf',m:'n./v. 增益（强化）',e:'The buff lasts ten seconds.'},
+{w:'debuff',p:'ˈdiːbʌf',m:'n. 减益（负面状态）',e:'This skill applies a debuff.'},
+{w:'potion',p:'ˈpəʊʃn',m:'n. 药水',e:'Drink a potion to restore mana.'},
+{w:'skill',p:'skɪl',m:'n. 技能',e:'Unlock a new skill at level 5.'},
+{w:'ability',p:'əˈbɪləti',m:'n. 能力；技能',e:'Each hero has three abilities.'},
+{w:'cooldown',p:'ˈkuːldaʊn',m:'n. 冷却时间',e:'The skill is on cooldown.'},
+{w:'level',p:'ˈlevl',m:'n. 等级 v. 升级',e:'You reached level 10.'},
+{w:'experience',p:'ɪkˈspɪəriəns',m:'n. 经验（经验值）',e:'Kill monsters to gain experience.'},
+{w:'upgrade',p:'ˈʌpɡreɪd',m:'v./n. 升级',e:'Upgrade your weapon at the forge.'},
+{w:'craft',p:'krɑːft',m:'v. 制作',e:'Craft a new helmet.'},
+{w:'gather',p:'ˈɡæðə',m:'v. 采集',e:'Gather wood and stone.'},
+{w:'loot',p:'luːt',m:'n./v. 战利品；拾取',e:'Loot the chest after the fight.'},
+{w:'drop',p:'drɒp',m:'n. 掉落物 v. 掉落',e:'The boss drops a rare sword.'},
+{w:'reward',p:'rɪˈwɔːd',m:'n. 奖励',e:'Your reward is 500 gold.'},
+{w:'gold',p:'ɡəʊld',m:'n. 金币',e:'You do not have enough gold.'},
+{w:'merchant',p:'ˈmɜːtʃənt',m:'n. 商人',e:'Talk to the merchant to buy.'},
+{w:'buy',p:'baɪ',m:'v. 购买',e:'Buy a stronger weapon.'},
+{w:'sell',p:'sel',m:'v. 出售',e:'Sell your old gear.'},
+{w:'trade',p:'treɪd',m:'v./n. 交易',e:'Trade items with other players.'},
+{w:'repair',p:'rɪˈpeə',m:'v. 修理',e:'Repair your armor before the raid.'},
+{w:'durability',p:'ˌdjʊərəˈbɪləti',m:'n. 耐久度',e:'The durability is almost zero.'},
+{w:'rarity',p:'ˈreərəti',m:'n. 稀有度',e:'This item has legendary rarity.'},
+{w:'common',p:'ˈkɒmən',m:'a. 普通的（稀有度）',e:'A common item, not worth much.'},
+{w:'rare',p:'reə',m:'a. 稀有的',e:'Rare items glow blue.'},
+{w:'epic',p:'ˈepɪk',m:'a. 史诗（稀有度）',e:'An epic drop from the boss.'},
+{w:'legendary',p:'ˈledʒəndri',m:'a. 传说级',e:'Legendary gear is very strong.'},
+{w:'checkpoint',p:'ˈtʃekpɔɪnt',m:'n. 检查点',e:'You restarted from the last checkpoint.'},
+{w:'respawn',p:'ˌriːˈspɔːn',m:'v. 重生',e:'Enemies respawn after a while.'},
+{w:'teleport',p:'ˈtelɪpɔːt',m:'v. 传送',e:'Teleport to the village.'},
+{w:'waypoint',p:'ˈweɪpɔɪnt',m:'n. 传送点；路标',e:'Unlock the waypoint first.'},
+{w:'map',p:'mæp',m:'n. 地图',e:'Open the map to find the quest.'},
+{w:'minimap',p:'ˈmɪnimæp',m:'n. 小地图',e:'The minimap shows enemies.'},
+{w:'enemy',p:'ˈenəmi',m:'n. 敌人',e:'Enemies are hiding in the fog.'},
+{w:'boss',p:'bɒs',m:'n. 首领（Boss）',e:'The boss has three phases.'},
+{w:'minion',p:'ˈmɪnjən',m:'n. 小怪；仆从',e:'Clear the minions first.'},
+{w:'parry',p:'ˈpæri',m:'v. 格挡（弹反）',e:'Parry at the right moment.'},
+{w:'dodge',p:'dɒdʒ',m:'v. 闪避',e:'Dodge the red attack.'},
+{w:'block',p:'blɒk',m:'v. 格挡',e:'Block with your shield.'},
+{w:'evade',p:'ɪˈveɪd',m:'v. 规避',e:'Evade the falling rocks.'},
+{w:'critical',p:'ˈkrɪtɪkl',m:'a. 暴击的',e:'A critical hit deals double damage.'},
+{w:'combo',p:'ˈkɒmbəʊ',m:'n. 连招',e:'Finish the combo with a heavy hit.'},
+{w:'stagger',p:'ˈstæɡə',m:'v. 硬直；踉跄',e:'Heavy attacks can stagger the boss.'},
+{w:'execute',p:'ˈeksɪkjuːt',m:'v. 处决',e:'Press F to execute.'},
+{w:'summon',p:'ˈsʌmən',m:'v. 召唤',e:'Summon a spirit to help you.'},
+{w:'mount',p:'maʊnt',m:'n. 坐骑 v. 骑乘',e:'Call your mount with H.'},
+{w:'fast travel',p:'fɑːst ˈtrævl',m:'n. 快速旅行',e:'Use fast travel to save time.'},
+{w:'stash',p:'stæʃ',m:'n. 仓库',e:'Put extra items in your stash.'},
+{w:'loadout',p:'ˈləʊdaʊt',m:'n. 装备方案',e:'Save this loadout as preset one.'},
+{w:'unlock',p:'ˌʌnˈlɒk',m:'v. 解锁',e:'Unlock the door with this key.'},
+{w:'locked',p:'lɒkt',m:'a. 锁定的',e:'This area is locked until chapter 3.'},
+{w:'requirement',p:'rɪˈkwaɪəmənt',m:'n. 需求；条件',e:'You do not meet the requirement.'},
+{w:'talent',p:'ˈtælənt',m:'n. 天赋',e:'Spend a point in the talent tree.'},
+{w:'perk',p:'pɜːk',m:'n. 专长；加成',e:'This perk increases your speed.'},
+{w:'attribute',p:'ˈætrɪbjuːt',m:'n. 属性',e:'Raise your strength attribute.'},
+{w:'resistance',p:'rɪˈzɪstəns',m:'n. 抗性',e:'Fire resistance helps here.'},
+{w:'immune',p:'ɪˈmjuːn',m:'a. 免疫的',e:'The boss is immune to poison.'},
+{w:'difficulty',p:'ˈdɪfɪkəlti',m:'n. 难度',e:'Change the difficulty in settings.'},
+{w:'normal',p:'ˈnɔːml',m:'a. 普通（难度）',e:'Play on normal first.'},
+{w:'hard',p:'hɑːd',m:'a. 困难（难度）',e:'Hard mode gives better loot.'},
+{w:'tutorial',p:'tjuːˈtɔːriəl',m:'n. 教程',e:'The tutorial explains the controls.'},
+{w:'settings',p:'ˈsetɪŋz',m:'n. 设置',e:'Open settings to change language.'},
+{w:'graphics',p:'ˈɡræfɪks',m:'n. 画面设置',e:'Lower the graphics for more fps.'},
+{w:'resolution',p:'ˌrezəˈluːʃn',m:'n. 分辨率',e:'Set the resolution to 1920x1080.'},
+{w:'fullscreen',p:'ˈfʊlskriːn',m:'a. 全屏',e:'Switch to fullscreen mode.'},
+{w:'windowed',p:'ˈwɪndəʊd',m:'a. 窗口化',e:'Windowed mode is easier to alt-tab.'},
+{w:'framerate',p:'ˈfreɪmreɪt',m:'n. 帧率',e:'The framerate drops in the city.'},
+{w:'subtitle',p:'ˈsʌbtaɪtl',m:'n. 字幕',e:'Turn on subtitles.'},
+{w:'volume',p:'ˈvɒljuːm',m:'n. 音量',e:'Adjust the volume in audio settings.'},
+{w:'enable',p:'ɪˈneɪbl',m:'v. 启用',e:'Enable the tutorial hints.'},
+{w:'disable',p:'dɪsˈeɪbl',m:'v. 禁用',e:'Disable motion blur.'},
+{w:'confirm',p:'kənˈfɜːm',m:'v. 确认',e:'Confirm your choice.'},
+{w:'cancel',p:'ˈkænsl',m:'v. 取消',e:'Press Esc to cancel.'},
+{w:'accept',p:'əkˈsept',m:'v. 接受',e:'Accept the quest.'},
+{w:'decline',p:'dɪˈklaɪn',m:'v. 拒绝',e:'Decline the offer politely.'},
+{w:'pause',p:'pɔːz',m:'v./n. 暂停',e:'Pause the game and take a break.'},
+{w:'resume',p:'rɪˈzjuːm',m:'v. 继续',e:'Resume from where you stopped.'},
+{w:'restart',p:'ˌriːˈstɑːt',m:'v. 重新开始',e:'Restart the level.'},
+{w:'quit',p:'kwɪt',m:'v. 退出',e:'Quit to the main menu.'},
+{w:'continue',p:'kənˈtɪnjuː',m:'v. 继续',e:'Press any key to continue.'},
+{w:'new game',p:'njuː ɡeɪm',m:'n. 新游戏',e:'Start a new game.'},
+{w:'credits',p:'ˈkredɪts',m:'n. 制作人员名单',e:'The credits roll after the ending.'},
+{w:'achievement',p:'əˈtʃiːvmənt',m:'n. 成就',e:'You unlocked an achievement.'},
+{w:'challenge',p:'ˈtʃælɪndʒ',m:'n. 挑战',e:'Complete the weekly challenge.'},
+{w:'daily',p:'ˈdeɪli',m:'a. 每日的',e:'Claim your daily reward.'},
+{w:'season',p:'ˈsiːzn',m:'n. 赛季',e:'The new season starts today.'},
+{w:'pass',p:'pɑːs',m:'n. 通行证',e:'Buy the battle pass.'},
+{w:'update',p:'ˈʌpdeɪt',m:'n./v. 更新',e:'The game needs an update.'},
+{w:'patch',p:'pætʃ',m:'n. 补丁',e:'This patch fixes the crash.'},
+{w:'server',p:'ˈsɜːvə',m:'n. 服务器',e:'The server is under maintenance.'},
+{w:'maintenance',p:'ˈmeɪntənəns',m:'n. 维护',e:'Server maintenance until 6 PM.'},
+{w:'multiplayer',p:'ˈmʌltipleɪə',m:'n. 多人模式',e:'Multiplayer needs a stable connection.'},
+{w:'single player',p:'ˈsɪŋɡl ˈpleɪə',m:'n. 单人模式',e:'I prefer single player games.'},
+{w:'lobby',p:'ˈlɒbi',m:'n. 大厅；房间',e:'Wait in the lobby for players.'},
+{w:'matchmaking',p:'ˈmætʃmeɪkɪŋ',m:'n. 匹配',e:'Matchmaking takes a while.'},
+{w:'ping',p:'pɪŋ',m:'n. 延迟（Ping）',e:'My ping is too high.'},
+{w:'save slot',p:'seɪv slɒt',m:'n. 存档位',e:'Do not overwrite this save slot.'},
+{w:'autosave',p:'ˈɔːtəʊseɪv',m:'n. 自动存档',e:'Autosave happens every five minutes.'},
+{w:'loading',p:'ˈləʊdɪŋ',m:'n. 加载',e:'The loading screen is slow.'},
+{w:'crash',p:'kræʃ',m:'v. 崩溃',e:'The game crashed again.'},
+{w:'bug',p:'bʌɡ',m:'n. 漏洞；Bug',e:'Report the bug to support.'}
 ];
 
 /* 功能词 120：不写"翻译"，写"它在句子里干什么" */
@@ -478,14 +596,417 @@ const ROOTS = {
 
 /* Steam 界面 100 词 */
 const STEAM = [
+{w:'store',p:'stɔː',m:'n. 商店',e:'Open the Steam Store.'},
+{w:'library',p:'ˈlaɪbrəri',m:'n. 库',e:'Your library has 32 games.'},
+{w:'wishlist',p:'ˈwɪʃlɪst',m:'n. 愿望单',e:'Add to your wishlist.'},
+{w:'cart',p:'kɑːt',m:'n. 购物车',e:'Add to cart.'},
+{w:'purchase',p:'ˈpɜːtʃəs',m:'v./n. 购买',e:'Purchase complete.'},
+{w:'checkout',p:'ˈtʃekaʊt',m:'n. 结账',e:'Proceed to checkout.'},
+{w:'discount',p:'ˈdɪskaʊnt',m:'n. 折扣',e:'-50% discount.'},
+{w:'sale',p:'seɪl',m:'n. 促销',e:'The sale ends in 2 hours.'},
+{w:'price',p:'praɪs',m:'n. 价格',e:'Price history.'},
+{w:'free',p:'friː',m:'a. 免费',e:'Free to play.'},
+{w:'demo',p:'ˈdeməʊ',m:'n. 试玩版',e:'Download the demo.'},
+{w:'bundle',p:'ˈbʌndl',m:'n. 组合包',e:'Buy the bundle and save.'},
+{w:'edition',p:'ɪˈdɪʃn',m:'n. 版本',e:'Deluxe Edition.'},
+{w:'release',p:'rɪˈliːs',m:'n./v. 发行',e:'Release date: Nov 21.'},
+{w:'developer',p:'dɪˈveləpə',m:'n. 开发商',e:'Developer: FromSoftware.'},
+{w:'publisher',p:'ˈpʌblɪʃə',m:'n. 发行商',e:'Publisher: Bandai Namco.'},
+{w:'genre',p:'ˈʒɒnrə',m:'n. 类型',e:'Genre: Action RPG.'},
+{w:'review',p:'rɪˈvjuː',m:'n./v. 评测',e:'Very positive reviews.'},
+{w:'tag',p:'tæɡ',m:'n. 标签',e:'Add a tag.'},
+{w:'screenshot',p:'ˈskriːnʃɒt',m:'n. 截图',e:'View screenshots.'},
+{w:'trailer',p:'ˈtreɪlə',m:'n. 预告片',e:'Watch the trailer.'},
+{w:'community',p:'kəˈmjuːnəti',m:'n. 社区',e:'Steam Community hub.'},
+{w:'workshop',p:'ˈwɜːkʃɒp',m:'n. 创意工坊',e:'Browse the Workshop.'},
+{w:'guide',p:'ɡaɪd',m:'n. 指南',e:'Read the guide.'},
+{w:'discussion',p:'dɪˈskʌʃn',m:'n. 讨论',e:'Join the discussion.'},
+{w:'market',p:'ˈmɑːkɪt',m:'n. 市场',e:'Community Market.'},
+{w:'trade',p:'treɪd',m:'v./n. 交易',e:'Trade items with friends.'},
+{w:'inventory',p:'ˈɪnvəntri',m:'n. 库存；物品栏',e:'Your inventory is private.'},
+{w:'badge',p:'bædʒ',m:'n. 徽章',e:'Earn a new badge.'},
+{w:'profile',p:'ˈprəʊfaɪl',m:'n. 个人资料',e:'Edit your profile.'},
+{w:'friend',p:'frend',m:'n. 好友',e:'Add friend.'},
+{w:'chat',p:'tʃæt',m:'n./v. 聊天',e:'Open a chat.'},
+{w:'group',p:'ɡruːp',m:'n. 群组',e:'Join a group.'},
+{w:'cloud',p:'klaʊd',m:'n. 云（存档）',e:'Steam Cloud synced.'},
+{w:'install',p:'ɪnˈstɔːl',m:'v. 安装',e:'Installing… 45%'},
+{w:'uninstall',p:'ˌʌnɪnˈstɔːl',m:'v. 卸载',e:'Uninstall this game.'},
+{w:'update',p:'ˈʌpdeɪt',m:'n./v. 更新',e:'Update required.'},
+{w:'queue',p:'kjuː',m:'n. 队列',e:'Download queue.'},
+{w:'download',p:'ˈdaʊnləʊd',m:'v./n. 下载',e:'Downloading 3.2 GB.'},
+{w:'verify',p:'ˈverɪfaɪ',m:'v. 验证',e:'Verify integrity of files.'},
+{w:'integrity',p:'ɪnˈteɡrəti',m:'n. 完整性',e:'Files failed to validate.'},
+{w:'launch',p:'lɔːntʃ',m:'v. 启动',e:'Launch the game.'},
+{w:'play',p:'pleɪ',m:'v. 游玩',e:'Play now.'},
+{w:'quit',p:'kwɪt',m:'v. 退出',e:'Quit to desktop.'},
+{w:'properties',p:'ˈprɒpətiz',m:'n. 属性',e:'Open properties.'},
+{w:'settings',p:'ˈsetɪŋz',m:'n. 设置',e:'Steam settings.'},
+{w:'controller',p:'kənˈtrəʊlə',m:'n. 手柄',e:'Controller connected.'},
+{w:'overlay',p:'ˈəʊvəleɪ',m:'n. 覆盖层',e:'Enable the in-game overlay.'},
+{w:'playtime',p:'ˈpleɪtaɪm',m:'n. 游戏时长',e:'Playtime: 12.5 hours.'},
+{w:'achievement',p:'əˈtʃiːvmənt',m:'n. 成就',e:'Unlocked 12 achievements.'},
+{w:'stats',p:'stæts',m:'n. 统计',e:'View your stats.'},
+{w:'leaderboard',p:'ˈliːdəbɔːd',m:'n. 排行榜',e:'Global leaderboard.'},
+{w:'news',p:'njuːz',m:'n. 新闻',e:'Patch notes and news.'},
+{w:'patch',p:'pætʃ',m:'n. 补丁',e:'Patch notes for 1.2.'},
+{w:'browse',p:'braʊz',m:'v. 浏览',e:'Browse by category.'},
+{w:'search',p:'sɜːtʃ',m:'v. 搜索',e:'Search the store.'},
+{w:'filter',p:'ˈfɪltə',m:'n./v. 筛选',e:'Filter by price.'},
+{w:'sort',p:'sɔːt',m:'v. 排序',e:'Sort by release date.'},
+{w:'featured',p:'ˈfiːtʃəd',m:'a. 精选的',e:'Featured & recommended.'},
+{w:'bestseller',p:'ˌbestˈselə',m:'n. 畅销',e:'Top sellers.'},
+{w:'refund',p:'ˈriːfʌnd',m:'n./v. 退款',e:'Request a refund.'},
+{w:'gift',p:'ɡɪft',m:'n./v. 礼物',e:'Buy as a gift.'},
+{w:'redeem',p:'rɪˈdiːm',m:'v. 兑换',e:'Redeem a key.'},
+{w:'key',p:'kiː',m:'n. 密钥',e:'Product key.'},
+{w:'wallet',p:'ˈwɒlɪt',m:'n. 钱包',e:'Steam Wallet balance.'},
+{w:'balance',p:'ˈbæləns',m:'n. 余额',e:'Balance: ¥42.00'},
+{w:'history',p:'ˈhɪstri',m:'n. 记录',e:'Purchase history.'},
+{w:'support',p:'səˈpɔːt',m:'n. 支持',e:'Steam Support.'},
+{w:'help',p:'help',m:'n. 帮助',e:'Need help?'},
+{w:'report',p:'rɪˈpɔːt',m:'v./n. 举报',e:'Report this user.'},
+{w:'block',p:'blɒk',m:'v. 屏蔽',e:'Block this player.'},
+{w:'public',p:'ˈpʌblɪk',m:'a. 公开的',e:'Public profile.'},
+{w:'private',p:'ˈpraɪvət',m:'a. 私密的',e:'Private game details.'},
+{w:'online',p:'ˌɒnˈlaɪn',m:'a. 在线',e:'Online: 3 friends.'},
+{w:'offline',p:'ˌɒfˈlaɪn',m:'a. 离线',e:'Offline mode.'},
+{w:'single-player',p:'ˌsɪŋɡl ˈpleɪə',m:'n. 单人',e:'Single-player only.'},
+{w:'multiplayer',p:'ˈmʌltipleɪə',m:'n. 多人',e:'Multiplayer supported.'},
+{w:'co-op',p:'ˈkəʊ ɒp',m:'n. 合作',e:'Online co-op.'},
+{w:'crossplay',p:'ˈkrɒspleɪ',m:'n. 跨平台联机',e:'Crossplay enabled.'},
+{w:'remote play',p:'rɪˈməʊt pleɪ',m:'n. 远程同乐',e:'Remote Play Together.'},
+{w:'family sharing',p:'ˈfæməli ˈʃeərɪŋ',m:'n. 家庭共享',e:'Enable Family Sharing.'},
+{w:'backup',p:'ˈbækʌp',m:'n. 备份',e:'Back up game files.'},
+{w:'move',p:'muːv',m:'v. 移动',e:'Move install folder.'},
+{w:'storage',p:'ˈstɔːrɪdʒ',m:'n. 存储',e:'Storage space: 40 GB free.'},
+{w:'space',p:'speɪs',m:'n. 空间',e:'Not enough disk space.'},
+{w:'required',p:'rɪˈkwaɪəd',m:'a. 必需的',e:'Minimum requirements.'},
+{w:'recommended',p:'ˌrekəˈmendɪd',m:'a. 推荐的',e:'Recommended specs.'},
+{w:'available',p:'əˈveɪləbl',m:'a. 可用的',e:'Available now.'},
+{w:'unavailable',p:'ˌʌnəˈveɪləbl',m:'a. 不可用',e:'Unavailable in your region.'},
+{w:'coming soon',p:'ˈkʌmɪŋ suːn',m:'即将推出',e:'Coming soon.'},
+{w:'early access',p:'ˈɜːli ˈækses',m:'早期测试',e:'Early Access game.'},
+{w:'deluxe',p:'dɪˈlʌks',m:'a. 豪华版',e:'Deluxe Edition content.'},
+{w:'standard',p:'ˈstændəd',m:'a. 标准版',e:'Standard Edition.'},
+{w:'pre-order',p:'ˌpriː ˈɔːdə',m:'v./n. 预购',e:'Pre-order now.'},
+{w:'release date',p:'rɪˈliːs deɪt',m:'n. 发售日',e:'Release date: soon.'},
+{w:'last played',p:'lɑːst pleɪd',m:'最近游玩',e:'Last played yesterday.'},
+{w:'hours',p:'ˈaʊəz',m:'n. 小时',e:'Total: 143 hours.'},
+{w:'favorite',p:'ˈfeɪvərɪt',m:'a. 收藏的',e:'Mark as favorite.'},
+{w:'collection',p:'kəˈlekʃn',m:'n. 合集',e:'Your collection.'},
+{w:'category',p:'ˈkætəɡəri',m:'n. 分类',e:'Browse by category.'}
 ];
 
 /* 成就英语 100 词（Steam 成就描述里最常见的说法） */
 const ACH = [
+{w:'achievement',p:'əˈtʃiːvmənt',m:'n. 成就',e:'Unlock this achievement.'},
+{w:'unlock',p:'ʌnˈlɒk',m:'v. 解锁',e:'Unlock the secret ending.'},
+{w:'complete',p:'kəmˈpliːt',m:'v. 完成',e:'Complete the game on hard.'},
+{w:'finish',p:'ˈfɪnɪʃ',m:'v. 完成；结束',e:'Finish all side quests.'},
+{w:'defeat',p:'dɪˈfiːt',m:'v. 击败',e:'Defeat the final boss.'},
+{w:'kill',p:'kɪl',m:'v. 杀死',e:'Kill 100 enemies.'},
+{w:'slay',p:'sleɪ',m:'v. 斩杀',e:'Slay the dragon.'},
+{w:'eliminate',p:'ɪˈlɪmɪneɪt',m:'v. 消灭',e:'Eliminate all targets.'},
+{w:'destroy',p:'dɪˈstrɔɪ',m:'v. 摧毁',e:'Destroy every tower.'},
+{w:'collect',p:'kəˈlekt',m:'v. 收集',e:'Collect all 30 coins.'},
+{w:'obtain',p:'əbˈteɪn',m:'v. 获得',e:'Obtain the rare weapon.'},
+{w:'acquire',p:'əˈkwaɪə',m:'v. 取得',e:'Acquire every skill.'},
+{w:'reach',p:'riːtʃ',m:'v. 到达；达到',e:'Reach level 50.'},
+{w:'survive',p:'səˈvaɪv',m:'v. 生存',e:'Survive for 10 minutes.'},
+{w:'escape',p:'ɪˈskeɪp',m:'v. 逃脱',e:'Escape the prison.'},
+{w:'rescue',p:'ˈreskjuː',m:'v. 营救',e:'Rescue all survivors.'},
+{w:'discover',p:'dɪˈskʌvə',m:'v. 发现',e:'Discover the hidden cave.'},
+{w:'find',p:'faɪnd',m:'v. 找到',e:'Find all lost pages.'},
+{w:'win',p:'wɪn',m:'v. 获胜',e:'Win a match without dying.'},
+{w:'lose',p:'luːz',m:'v. 失败',e:'Lose a match.'},
+{w:'clear',p:'klɪə',m:'v. 通关；清空',e:'Clear the dungeon.'},
+{w:'beat',p:'biːt',m:'v. 打败',e:'Beat your own record.'},
+{w:'earn',p:'ɜːn',m:'v. 赚取',e:'Earn 10,000 gold.'},
+{w:'spend',p:'spend',m:'v. 花费',e:'Spend 1,000 coins.'},
+{w:'buy',p:'baɪ',m:'v. 购买',e:'Buy every item.'},
+{w:'sell',p:'sel',m:'v. 出售',e:'Sell 100 items.'},
+{w:'upgrade',p:'ˈʌpɡreɪd',m:'v. 升级',e:'Upgrade all weapons.'},
+{w:'craft',p:'krɑːft',m:'v. 制作',e:'Craft a legendary item.'},
+{w:'build',p:'bɪld',m:'v. 建造',e:'Build 20 structures.'},
+{w:'repair',p:'rɪˈpeə',m:'v. 修理',e:'Repair the bridge.'},
+{w:'equip',p:'ɪˈkwɪp',m:'v. 装备',e:'Equip a full set.'},
+{w:'use',p:'juːz',m:'v. 使用',e:'Use every ability once.'},
+{w:'cast',p:'kɑːst',m:'v. 施放',e:'Cast 50 spells.'},
+{w:'dodge',p:'dɒdʒ',m:'v. 闪避',e:'Dodge 100 attacks.'},
+{w:'block',p:'blɒk',m:'v. 格挡',e:'Block with a shield.'},
+{w:'parry',p:'ˈpæri',m:'v. 弹反',e:'Parry the boss attack.'},
+{w:'heal',p:'hiːl',m:'v. 治疗',e:'Heal your allies.'},
+{w:'damage',p:'ˈdæmɪdʒ',m:'n./v. 伤害',e:'Deal 1,000 damage.'},
+{w:'without',p:'wɪˈðaʊt',m:'prep. 没有',e:'Win without taking damage.'},
+{w:'no',p:'nəʊ',m:'a. 没有',e:'No death run.'},
+{w:'first',p:'fɜːst',m:'a. 第一次',e:'First victory.'},
+{w:'last',p:'lɑːst',m:'a. 最后的',e:'Defeat the last boss.'},
+{w:'all',p:'ɔːl',m:'a. 全部',e:'All achievements unlocked.'},
+{w:'every',p:'ˈevri',m:'a. 每一个',e:'Every chapter completed.'},
+{w:'each',p:'iːtʃ',m:'a. 每个',e:'Win with each character.'},
+{w:'single',p:'ˈsɪŋɡl',m:'a. 单次的',e:'Finish in a single run.'},
+{w:'run',p:'rʌn',m:'n. 一局',e:'A perfect run.'},
+{w:'playthrough',p:'ˈpleɪθruː',m:'n. 一次通关',e:'In one playthrough.'},
+{w:'chapter',p:'ˈtʃæptə',m:'n. 章节',e:'Reach chapter 5.'},
+{w:'level',p:'ˈlevl',m:'n. 等级；关卡',e:'Reach level 30.'},
+{w:'rank',p:'ræŋk',m:'n. 排名',e:'Reach rank 10.'},
+{w:'score',p:'skɔː',m:'n. 分数',e:'Score 50,000 points.'},
+{w:'points',p:'pɔɪnts',m:'n. 分数',e:'Collect 1,000 points.'},
+{w:'combo',p:'ˈkɒmbəʊ',m:'n. 连击',e:'Get a 20-hit combo.'},
+{w:'streak',p:'striːk',m:'n. 连胜',e:'Win a 5-win streak.'},
+{w:'challenge',p:'ˈtʃælɪndʒ',m:'n. 挑战',e:'Complete the challenge.'},
+{w:'mode',p:'məʊd',m:'n. 模式',e:'Beat hard mode.'},
+{w:'difficulty',p:'ˈdɪfɪkəlti',m:'n. 难度',e:'On any difficulty.'},
+{w:'hard',p:'hɑːd',m:'a. 困难',e:'Finish on hard.'},
+{w:'nightmare',p:'ˈnaɪtmeə',m:'n. 噩梦（难度）',e:'Survive nightmare mode.'},
+{w:'secret',p:'ˈsiːkrət',m:'a. 隐藏的',e:'Find the secret room.'},
+{w:'hidden',p:'ˈhɪdn',m:'a. 隐藏的',e:'Open every hidden chest.'},
+{w:'rare',p:'reə',m:'a. 稀有的',e:'Get a rare item.'},
+{w:'item',p:'ˈaɪtəm',m:'n. 物品',e:'Collect 50 items.'},
+{w:'weapon',p:'ˈwepən',m:'n. 武器',e:'With only a starter weapon.'},
+{w:'armor',p:'ˈɑːmə',m:'n. 护甲',e:'Wear legendary armor.'},
+{w:'ability',p:'əˈbɪləti',m:'n. 能力',e:'Use all abilities.'},
+{w:'skill',p:'skɪl',m:'n. 技能',e:'Master every skill.'},
+{w:'boss',p:'bɒs',m:'n. 首领',e:'Beat the boss without healing.'},
+{w:'enemy',p:'ˈenəmi',m:'n. 敌人',e:'Kill 500 enemies.'},
+{w:'quest',p:'kwest',m:'n. 任务',e:'Complete all quests.'},
+{w:'mission',p:'ˈmɪʃn',m:'n. 任务；关卡',e:'Finish every mission.'},
+{w:'objective',p:'əbˈdʒektɪv',m:'n. 目标',e:'Clear all objectives.'},
+{w:'reward',p:'rɪˈwɔːd',m:'n. 奖励',e:'Claim your reward.'},
+{w:'trophy',p:'ˈtrəʊfi',m:'n. 奖杯',e:'Earn every trophy.'},
+{w:'platinum',p:'ˈplætɪnəm',m:'n. 白金（全成就）',e:'Get the platinum trophy.'},
+{w:'gold',p:'ɡəʊld',m:'n. 金（奖牌）',e:'Earn a gold medal.'},
+{w:'silver',p:'ˈsɪlvə',m:'n. 银（奖牌）',e:'Earn a silver medal.'},
+{w:'bronze',p:'brɒnz',m:'n. 铜（奖牌）',e:'Earn a bronze medal.'},
+{w:'collectible',p:'kəˈlektəbl',m:'n. 收集品',e:'Find every collectible.'},
+{w:'full',p:'fʊl',m:'a. 完整的',e:'Complete the full set.'},
+{w:'set',p:'set',m:'n. 一套',e:'Collect a complete set.'},
+{w:'ending',p:'ˈendɪŋ',m:'n. 结局',e:'See the true ending.'},
+{w:'story',p:'ˈstɔːri',m:'n. 故事；剧情',e:'Finish the story.'},
+{w:'speedrun',p:'ˈspiːdrʌn',m:'n. 速通',e:'Finish the game in under 2 hours.'},
+{w:'perfect',p:'ˈpɜːfɪkt',m:'a. 完美的',e:'A perfect clear.'},
+{w:'flawless',p:'ˈflɔːləs',m:'a. 无瑕的',e:'Flawless victory.'},
+{w:'consecutive',p:'kənˈsekjətɪv',m:'a. 连续的',e:'Win 3 consecutive matches.'},
+{w:'times',p:'taɪmz',m:'n. 次数',e:'Die 10 times.'},
+{w:'total',p:'ˈtəʊtl',m:'a. 累计的',e:'Total 100 hours played.'},
+{w:'cumulative',p:'ˈkjuːmjələtɪv',m:'a. 累计的',e:'Cumulative damage dealt.'},
+{w:'lifetime',p:'ˈlaɪftaɪm',m:'a. 终身的',e:'Lifetime earnings.'},
+{w:'within',p:'wɪˈðɪn',m:'prep. 在……之内',e:'Within 60 seconds.'},
+{w:'during',p:'ˈdjʊərɪŋ',m:'prep. 在……期间',e:'During the night.'},
+{w:'while',p:'waɪl',m:'conj. 当……时',e:'While riding a horse.'},
+{w:'once',p:'wʌns',m:'ad. 一次',e:'Kill the boss in one hit.'},
+{w:'twice',p:'twaɪs',m:'ad. 两次',e:'Complete it twice.'},
+{w:'in a row',p:'ɪn ə rəʊ',m:'连续地',e:'Win three games in a row.'},
+{w:'one hit',p:'wʌn hɪt',m:'一击',e:'Defeat it in one hit.'},
+{w:'no damage',p:'nəʊ ˈdæmɪdʒ',m:'无伤',e:'Finish with no damage.'}
 ];
 
 /* ============ 词库 B：四级高频 209 词 ============ */
 const CET4 = [
+{w:'abandon',p:'əˈbændən',m:'v. 放弃；抛弃',e:'They abandoned the old plan.'},
+{w:'ability',p:'əˈbɪləti',m:'n. 能力',e:'She has the ability to learn fast.'},
+{w:'absorb',p:'əbˈzɔːb',m:'v. 吸收；吸引',e:'Plants absorb water from the soil.'},
+{w:'abstract',p:'ˈæbstrækt',m:'a. 抽象的 n. 摘要',e:'This is an abstract idea.'},
+{w:'accept',p:'əkˈsept',m:'v. 接受',e:'I accept your apology.'},
+{w:'access',p:'ˈækses',m:'n. 通道；权限 v. 访问',e:'Students have access to the library.'},
+{w:'accident',p:'ˈæksɪdənt',m:'n. 事故；意外',e:'The accident happened at night.'},
+{w:'account',p:'əˈkaʊnt',m:'n. 账户；说明',e:'I opened a bank account.'},
+{w:'accurate',p:'ˈækjərət',m:'a. 准确的',e:'Please give an accurate answer.'},
+{w:'achieve',p:'əˈtʃiːv',m:'v. 实现；达到',e:'He achieved his goal.'},
+{w:'adapt',p:'əˈdæpt',m:'v. 适应；改编',e:'She adapted to the new school.'},
+{w:'address',p:'əˈdres',m:'n. 地址 v. 处理',e:'We must address this problem.'},
+{w:'admire',p:'ədˈmaɪə',m:'v. 钦佩；欣赏',e:'I admire her courage.'},
+{w:'admit',p:'ədˈmɪt',m:'v. 承认；准许进入',e:'He admitted his mistake.'},
+{w:'adopt',p:'əˈdɒpt',m:'v. 采用；收养',e:'They adopted a new method.'},
+{w:'advance',p:'ədˈvɑːns',m:'v./n. 前进；进步',e:'The team made great advances.'},
+{w:'advantage',p:'ədˈvɑːntɪdʒ',m:'n. 优势；好处',e:'Speaking English is an advantage.'},
+{w:'adventure',p:'ədˈventʃə',m:'n. 冒险',e:'The trip was a real adventure.'},
+{w:'advertise',p:'ˈædvətaɪz',m:'v. 做广告；宣传',e:'They advertise on TV.'},
+{w:'advice',p:'ədˈvaɪs',m:'n. 建议',e:'Take my advice and rest.'},
+{w:'affect',p:'əˈfekt',m:'v. 影响',e:'Weather affects my mood.'},
+{w:'afford',p:'əˈfɔːd',m:'v. 负担得起',e:'I cannot afford a new car.'},
+{w:'agency',p:'ˈeɪdʒənsi',m:'n. 机构；代理',e:'She works for a travel agency.'},
+{w:'agree',p:'əˈɡriː',m:'v. 同意',e:'I agree with your idea.'},
+{w:'aim',p:'eɪm',m:'n. 目标 v. 瞄准',e:'Our aim is to finish today.'},
+{w:'allow',p:'əˈlaʊ',m:'v. 允许',e:'They allow pets in the room.'},
+{w:'amount',p:'əˈmaʊnt',m:'n. 数量',e:'A large amount of work remains.'},
+{w:'analysis',p:'əˈnæləsɪs',m:'n. 分析',e:'The analysis took two days.'},
+{w:'ancient',p:'ˈeɪnʃənt',m:'a. 古代的',e:'We visited an ancient temple.'},
+{w:'announce',p:'əˈnaʊns',m:'v. 宣布',e:'They announced the winner.'},
+{w:'anxious',p:'ˈæŋkʃəs',m:'a. 焦虑的；渴望的',e:'She felt anxious before the exam.'},
+{w:'appear',p:'əˈpɪə',m:'v. 出现；显得',e:'A star appeared in the sky.'},
+{w:'apply',p:'əˈplaɪ',m:'v. 申请；应用',e:'She applied for the job.'},
+{w:'appreciate',p:'əˈpriːʃieɪt',m:'v. 感激；欣赏',e:'I appreciate your help.'},
+{w:'approach',p:'əˈprəʊtʃ',m:'v. 接近 n. 方法',e:'Winter is approaching.'},
+{w:'argue',p:'ˈɑːɡjuː',m:'v. 争论；主张',e:'They argued about money.'},
+{w:'arrange',p:'əˈreɪndʒ',m:'v. 安排；整理',e:'I arranged a meeting.'},
+{w:'article',p:'ˈɑːtɪkl',m:'n. 文章；物品',e:'I read an interesting article.'},
+{w:'assume',p:'əˈsjuːm',m:'v. 假定；承担',e:'I assume you are ready.'},
+{w:'attack',p:'əˈtæk',m:'v./n. 攻击',e:'The dog attacked a stranger.'},
+{w:'attempt',p:'əˈtempt',m:'v./n. 尝试',e:'He attempted the question twice.'},
+{w:'attend',p:'əˈtend',m:'v. 出席；照料',e:'She attended the party.'},
+{w:'attitude',p:'ˈætɪtjuːd',m:'n. 态度',e:'A positive attitude helps.'},
+{w:'attract',p:'əˈtrækt',m:'v. 吸引',e:'The show attracted many people.'},
+{w:'available',p:'əˈveɪləbl',m:'a. 可用的；有空的',e:'The room is still available.'},
+{w:'avoid',p:'əˈvɔɪd',m:'v. 避免',e:'Try to avoid sugar.'},
+{w:'aware',p:'əˈweə',m:'a. 意识到的',e:'Are you aware of the risk?'},
+{w:'balance',p:'ˈbæləns',m:'n./v. 平衡',e:'She lost her balance.'},
+{w:'basic',p:'ˈbeɪsɪk',m:'a. 基本的',e:'We need basic skills first.'},
+{w:'benefit',p:'ˈbenɪfɪt',m:'n. 好处 v. 受益',e:'Exercise has many benefits.'},
+{w:'brief',p:'briːf',m:'a. 简短的 v. 简述',e:'Please be brief.'},
+{w:'broad',p:'brɔːd',m:'a. 宽阔的',e:'The road is very broad.'},
+{w:'budget',p:'ˈbʌdʒɪt',m:'n. 预算',e:'Our budget is limited.'},
+{w:'campaign',p:'kæmˈpeɪn',m:'n. 运动；战役',e:'They started a new campaign.'},
+{w:'capable',p:'ˈkeɪpəbl',m:'a. 有能力的',e:'She is capable of doing it.'},
+{w:'capacity',p:'kəˈpæsəti',m:'n. 容量；能力',e:'The hall has a large capacity.'},
+{w:'career',p:'kəˈrɪə',m:'n. 职业；生涯',e:'He began his career as a teacher.'},
+{w:'cause',p:'kɔːz',m:'n. 原因 v. 引起',e:'Heavy rain caused delays.'},
+{w:'challenge',p:'ˈtʃælɪndʒ',m:'n./v. 挑战',e:'This job is a real challenge.'},
+{w:'character',p:'ˈkærəktə',m:'n. 性格；人物',e:'She has a strong character.'},
+{w:'charge',p:'tʃɑːdʒ',m:'v. 充电；收费 n. 费用',e:'I need to charge my phone.'},
+{w:'claim',p:'kleɪm',m:'v. 声称；索取',e:'He claims to know the answer.'},
+{w:'climate',p:'ˈklaɪmət',m:'n. 气候',e:'The climate is getting warmer.'},
+{w:'collect',p:'kəˈlekt',m:'v. 收集',e:'I collect old stamps.'},
+{w:'combine',p:'kəmˈbaɪn',m:'v. 结合',e:'Combine work with rest.'},
+{w:'comment',p:'ˈkɒment',m:'n./v. 评论',e:'She made a short comment.'},
+{w:'commit',p:'kəˈmɪt',m:'v. 犯（错）；承诺',e:'He committed a serious error.'},
+{w:'compare',p:'kəmˈpeə',m:'v. 比较',e:'Compare the two answers.'},
+{w:'compete',p:'kəmˈpiːt',m:'v. 竞争',e:'They compete for the prize.'},
+{w:'complete',p:'kəmˈpliːt',m:'v. 完成 a. 完整的',e:'I completed the task today.'},
+{w:'concern',p:'kənˈsɜːn',m:'n. 关切 v. 涉及',e:'This is a public concern.'},
+{w:'condition',p:'kənˈdɪʃn',m:'n. 条件；状况',e:'The car is in good condition.'},
+{w:'confirm',p:'kənˈfɜːm',m:'v. 确认',e:'Please confirm your booking.'},
+{w:'consider',p:'kənˈsɪdə',m:'v. 考虑；认为',e:'Please consider my offer.'},
+{w:'consist',p:'kənˈsɪst',m:'v. 组成（of）',e:'The team consists of five people.'},
+{w:'contact',p:'ˈkɒntækt',m:'n./v. 联系',e:'I will contact you soon.'},
+{w:'contain',p:'kənˈteɪn',m:'v. 包含',e:'This box contains books.'},
+{w:'continue',p:'kənˈtɪnjuː',m:'v. 继续',e:'We continued the discussion.'},
+{w:'control',p:'kənˈtrəʊl',m:'v./n. 控制',e:'He cannot control his anger.'},
+{w:'convenient',p:'kənˈviːniənt',m:'a. 方便的',e:'Is Friday convenient for you?'},
+{w:'create',p:'kriˈeɪt',m:'v. 创造',e:'She created a small program.'},
+{w:'crowd',p:'kraʊd',m:'n. 人群 v. 拥挤',e:'The crowd grew quiet.'},
+{w:'damage',p:'ˈdæmɪdʒ',m:'n./v. 损害',e:'The storm damaged the roof.'},
+{w:'deal',p:'diːl',m:'v. 处理（with）n. 交易',e:'We must deal with this now.'},
+{w:'debate',p:'dɪˈbeɪt',m:'n./v. 辩论',e:'They debated for two hours.'},
+{w:'decade',p:'ˈdekeɪd',m:'n. 十年',e:'Prices rose over the decade.'},
+{w:'declare',p:'dɪˈkleə',m:'v. 宣布；声明',e:'They declared the result.'},
+{w:'decrease',p:'dɪˈkriːs',m:'v./n. 减少',e:'Sales decreased last month.'},
+{w:'define',p:'dɪˈfaɪn',m:'v. 定义',e:'Can you define this word?'},
+{w:'deliver',p:'dɪˈlɪvə',m:'v. 递送；发表',e:'He delivered the parcel.'},
+{w:'demand',p:'dɪˈmɑːnd',m:'n./v. 要求；需求',e:'Demand for tickets is high.'},
+{w:'depend',p:'dɪˈpend',m:'v. 依赖（on）',e:'It depends on the weather.'},
+{w:'describe',p:'dɪˈskraɪb',m:'v. 描述',e:'Describe what you saw.'},
+{w:'design',p:'dɪˈzaɪn',m:'n./v. 设计',e:'She designed a simple page.'},
+{w:'desire',p:'dɪˈzaɪə',m:'n./v. 渴望',e:'He has a strong desire to win.'},
+{w:'destroy',p:'dɪˈstrɔɪ',m:'v. 摧毁',e:'Fire destroyed the house.'},
+{w:'determine',p:'dɪˈtɜːmɪn',m:'v. 决定；确定',e:'We must determine the cause.'},
+{w:'develop',p:'dɪˈveləp',m:'v. 发展；开发',e:'They developed a new app.'},
+{w:'device',p:'dɪˈvaɪs',m:'n. 设备',e:'This device saves power.'},
+{w:'difference',p:'ˈdɪfrəns',m:'n. 差别',e:'What is the difference?'},
+{w:'direct',p:'dəˈrekt',m:'a. 直接的 v. 指导',e:'Take a direct flight.'},
+{w:'discover',p:'dɪˈskʌvə',m:'v. 发现',e:'They discovered a new island.'},
+{w:'discuss',p:'dɪˈskʌs',m:'v. 讨论',e:'Let us discuss the plan.'},
+{w:'distance',p:'ˈdɪstəns',m:'n. 距离',e:'The distance is only two miles.'},
+{w:'divide',p:'dɪˈvaɪd',m:'v. 分开；划分',e:'Divide the work into parts.'},
+{w:'doubt',p:'daʊt',m:'n./v. 怀疑',e:'I doubt his story.'},
+{w:'effect',p:'ɪˈfekt',m:'n. 影响；效果',e:'The effect was immediate.'},
+{w:'effort',p:'ˈefət',m:'n. 努力',e:'She made a great effort.'},
+{w:'encourage',p:'ɪnˈkʌrɪdʒ',m:'v. 鼓励',e:'My teacher encouraged me.'},
+{w:'ensure',p:'ɪnˈʃʊə',m:'v. 确保',e:'Please ensure the door is locked.'},
+{w:'environment',p:'ɪnˈvaɪrənmənt',m:'n. 环境',e:'We must protect the environment.'},
+{w:'equipment',p:'ɪˈkwɪpmənt',m:'n. 设备',e:'The lab has new equipment.'},
+{w:'escape',p:'ɪˈskeɪp',m:'v./n. 逃脱',e:'The bird escaped the cage.'},
+{w:'especially',p:'ɪˈspeʃəli',m:'ad. 尤其',e:'I like fruit, especially apples.'},
+{w:'establish',p:'ɪˈstæblɪʃ',m:'v. 建立',e:'They established a new school.'},
+{w:'event',p:'ɪˈvent',m:'n. 事件；活动',e:'The event starts at noon.'},
+{w:'evidence',p:'ˈevɪdəns',m:'n. 证据',e:'There is no evidence yet.'},
+{w:'examine',p:'ɪɡˈzæmɪn',m:'v. 检查；审查',e:'The doctor examined me.'},
+{w:'example',p:'ɪɡˈzɑːmpl',m:'n. 例子',e:'Give me one example.'},
+{w:'exchange',p:'ɪksˈtʃeɪndʒ',m:'n./v. 交换',e:'We exchanged phone numbers.'},
+{w:'exist',p:'ɪɡˈzɪst',m:'v. 存在',e:'Does life exist on Mars?'},
+{w:'expect',p:'ɪkˈspekt',m:'v. 期待；预料',e:'I expect rain tonight.'},
+{w:'explain',p:'ɪkˈspleɪn',m:'v. 解释',e:'Please explain the rule.'},
+{w:'express',p:'ɪkˈspres',m:'v. 表达 a. 快速的',e:'He expressed his thanks.'},
+{w:'extend',p:'ɪkˈstend',m:'v. 延长；扩展',e:'We extended the deadline.'},
+{w:'fail',p:'feɪl',m:'v. 失败；不及格',e:'He failed the test again.'},
+{w:'familiar',p:'fəˈmɪliə',m:'a. 熟悉的',e:'This song sounds familiar.'},
+{w:'feature',p:'ˈfiːtʃə',m:'n. 特征 v. 以…为特色',e:'The app has a new feature.'},
+{w:'figure',p:'ˈfɪɡə',m:'n. 数字；人物 v. 认为',e:'The figure looks wrong.'},
+{w:'focus',p:'ˈfəʊkəs',m:'v./n. 集中；焦点',e:'Focus on one task.'},
+{w:'follow',p:'ˈfɒləʊ',m:'v. 跟随；遵循',e:'Follow the instructions.'},
+{w:'formal',p:'ˈfɔːml',m:'a. 正式的',e:'Write a formal letter.'},
+{w:'frequent',p:'ˈfriːkwənt',m:'a. 频繁的',e:'He makes frequent trips.'},
+{w:'further',p:'ˈfɜːðə',m:'ad. 进一步 a. 更远的',e:'We need further study.'},
+{w:'gain',p:'ɡeɪn',m:'v./n. 获得；增加',e:'He gained new skills.'},
+{w:'general',p:'ˈdʒenrəl',m:'a. 一般的；总的',e:'This is a general rule.'},
+{w:'goal',p:'ɡəʊl',m:'n. 目标；进球',e:'My goal is to finish today.'},
+{w:'guess',p:'ɡes',m:'v./n. 猜测',e:'Guess what happened.'},
+{w:'handle',p:'ˈhændl',m:'v. 处理 n. 把手',e:'She handled the problem well.'},
+{w:'improve',p:'ɪmˈpruːv',m:'v. 改进；提高',e:'I want to improve my English.'},
+{w:'include',p:'ɪnˈkluːd',m:'v. 包括',e:'The price includes breakfast.'},
+{w:'increase',p:'ɪnˈkriːs',m:'v./n. 增加',e:'Prices increased this year.'},
+{w:'influence',p:'ˈɪnfluəns',m:'n./v. 影响',e:'Parents influence their children.'},
+{w:'inform',p:'ɪnˈfɔːm',m:'v. 通知',e:'Please inform the manager.'},
+{w:'instead',p:'ɪnˈsted',m:'ad. 代替；反而',e:'Let us walk instead.'},
+{w:'intend',p:'ɪnˈtend',m:'v. 打算',e:'I intend to leave early.'},
+{w:'introduce',p:'ˌɪntrəˈdjuːs',m:'v. 介绍；引入',e:'Let me introduce my friend.'},
+{w:'involve',p:'ɪnˈvɒlv',m:'v. 涉及；使参与',e:'The job involves travel.'},
+{w:'issue',p:'ˈɪʃuː',m:'n. 问题；期号 v. 发布',e:'We must solve this issue.'},
+{w:'judge',p:'dʒʌdʒ',m:'n. 法官 v. 判断',e:'Do not judge too quickly.'},
+{w:'knowledge',p:'ˈnɒlɪdʒ',m:'n. 知识',e:'Knowledge is power.'},
+{w:'lack',p:'læk',m:'n./v. 缺乏',e:'He lacks confidence.'},
+{w:'likely',p:'ˈlaɪkli',m:'a. 可能的',e:'Rain is likely tonight.'},
+{w:'limit',p:'ˈlɪmɪt',m:'n. 限制 v. 限定',e:'There is a time limit.'},
+{w:'manage',p:'ˈmænɪdʒ',m:'v. 管理；设法做到',e:'She managed to finish on time.'},
+{w:'matter',p:'ˈmætə',m:'n. 事情 v. 要紧',e:'It does not matter much.'},
+{w:'measure',p:'ˈmeʒə',m:'v. 测量 n. 措施',e:'Measure the length first.'},
+{w:'method',p:'ˈmeθəd',m:'n. 方法',e:'This method works well.'},
+{w:'mention',p:'ˈmenʃn',m:'v. 提到',e:'He mentioned your name.'},
+{w:'necessary',p:'ˈnesəsəri',m:'a. 必要的',e:'Sleep is necessary for health.'},
+{w:'notice',p:'ˈnəʊtɪs',m:'v. 注意到 n. 通知',e:'I noticed a small mistake.'},
+{w:'obtain',p:'əbˈteɪn',m:'v. 获得',e:'You can obtain a visa online.'},
+{w:'occur',p:'əˈkɜː',m:'v. 发生；想到',e:'The idea occurred to me.'},
+{w:'offer',p:'ˈɒfə',m:'v./n. 提供',e:'They offered me a job.'},
+{w:'opportunity',p:'ˌɒpəˈtjuːnəti',m:'n. 机会',e:'This is a good opportunity.'},
+{w:'ordinary',p:'ˈɔːdnri',m:'a. 普通的',e:'It was an ordinary day.'},
+{w:'organize',p:'ˈɔːɡənaɪz',m:'v. 组织；整理',e:'She organized the meeting.'},
+{w:'particular',p:'pəˈtɪkjələ',m:'a. 特定的；特别的',e:'I have no particular plan.'},
+{w:'perform',p:'pəˈfɔːm',m:'v. 表演；执行',e:'The team performed well.'},
+{w:'permit',p:'pəˈmɪt',m:'v. 允许 n. 许可证',e:'Smoking is not permitted here.'},
+{w:'persuade',p:'pəˈsweɪd',m:'v. 说服',e:'She persuaded me to stay.'},
+{w:'possible',p:'ˈpɒsəbl',m:'a. 可能的',e:'Is it possible to change it?'},
+{w:'practice',p:'ˈpræktɪs',m:'n. 练习；实践',e:'Practice makes perfect.'},
+{w:'prefer',p:'prɪˈfɜː',m:'v. 更喜欢',e:'I prefer tea to coffee.'},
+{w:'prepare',p:'prɪˈpeə',m:'v. 准备',e:'Prepare for the test.'},
+{w:'prevent',p:'prɪˈvent',m:'v. 阻止；预防',e:'Vaccines prevent disease.'},
+{w:'process',p:'ˈprəʊses',m:'n. 过程 v. 处理',e:'Learning is a slow process.'},
+{w:'produce',p:'prəˈdjuːs',m:'v. 生产 n. 农产品',e:'This factory produces cars.'},
+{w:'purpose',p:'ˈpɜːpəs',m:'n. 目的',e:'What is the purpose of this?'},
+{w:'quality',p:'ˈkwɒləti',m:'n. 质量；品质',e:'The quality is excellent.'},
+{w:'rather',p:'ˈrɑːðə',m:'ad. 相当；宁可',e:'It is rather cold today.'},
+{w:'reduce',p:'rɪˈdjuːs',m:'v. 减少',e:'We must reduce waste.'},
+{w:'refer',p:'rɪˈfɜː',m:'v. 提到；参考（to）',e:'He referred to the report.'},
+{w:'require',p:'rɪˈkwaɪə',m:'v. 需要；要求',e:'This job requires patience.'},
+{w:'result',p:'rɪˈzʌlt',m:'n. 结果 v. 导致（in）',e:'The result surprised us.'},
+{w:'serious',p:'ˈsɪəriəs',m:'a. 严重的；认真的',e:'This is a serious problem.'},
+{w:'similar',p:'ˈsɪmələ',m:'a. 相似的',e:'The two ideas are similar.'},
+{w:'specific',p:'spəˈsɪfɪk',m:'a. 具体的；特定的',e:'Give me a specific example.'},
+{w:'standard',p:'ˈstændəd',m:'n. 标准 a. 标准的',e:'He meets the standard.'},
+{w:'succeed',p:'səkˈsiːd',m:'v. 成功',e:'She succeeded in her career.'},
+{w:'suggest',p:'səˈdʒest',m:'v. 建议；暗示',e:'I suggest a short break.'},
+{w:'support',p:'səˈpɔːt',m:'v./n. 支持',e:'They supported my decision.'},
+{w:'suppose',p:'səˈpəʊz',m:'v. 假设；认为',e:'I suppose you are right.'},
+{w:'surface',p:'ˈsɜːfɪs',m:'n. 表面',e:'The surface is smooth.'},
+{w:'survive',p:'səˈvaɪv',m:'v. 幸存',e:'Few plants survive the winter.'},
+{w:'tend',p:'tend',m:'v. 倾向于',e:'People tend to forget names.'},
+{w:'theory',p:'ˈθɪəri',m:'n. 理论',e:'The theory fits the data.'},
+{w:'tradition',p:'trəˈdɪʃn',m:'n. 传统',e:'It is a family tradition.'},
+{w:'trust',p:'trʌst',m:'v./n. 信任',e:'I trust her judgement.'},
+{w:'usual',p:'ˈjuːʒuəl',m:'a. 通常的',e:'He arrived at the usual time.'},
+{w:'value',p:'ˈvæljuː',m:'n. 价值 v. 重视',e:'This book has great value.'},
+{w:'various',p:'ˈveəriəs',m:'a. 各种各样的',e:'We tried various methods.'},
+{w:'whole',p:'həʊl',m:'a. 整个的',e:'She read the whole book.'}
 ];
 
 /* ============ 状态 ============ */
@@ -497,7 +1018,7 @@ const INTERVALS = [1, 3, 7, 15, 30, 60];
 const MASTER_STAGE = 5;
 const NEW_OPTIONS = [5, 10, 20, 30, 40];
 
-function blank(){ return {data:{}, custom:[], deck:'func', goal:10, streak:{last:'',n:0}, dayNew:{date:'',n:0}, ok:0, bad:0, reviewedDate:'', reviewCount:0, reviewCountDay:'', earlyReviewDate:'', remind:'21:30', notifyOn:false, timerAt:0, confuse:[]}; }
+function blank(){ return {data:{}, custom:[], deck:'game', goal:20, streak:{last:'',n:0}, dayNew:{date:'',n:0}, ok:0, bad:0, reviewedDate:'', reviewCount:0, reviewCountDay:'', earlyReviewDate:'', remind:'21:30', notifyOn:false, timerAt:0, confuse:[]}; }
 function load(){
   try{
     const raw = JSON.parse(localStorage.getItem(KEY));
@@ -1104,6 +1625,7 @@ function renderScene(){
   if(!scene) return;
   setBack(true);
   window.__AT_TOOL_HOME = false;
+  window.__AT_TOOL_HOME = false;
   if(scene.idx >= scene.list.length){
     $("#view").innerHTML = `
       <h1>场景练习完成</h1>
@@ -1257,21 +1779,6 @@ function renderHome(){
       <div class="row" style="margin-top:8px"><span>今日必学</span><b style="font-size:22px">${Math.min(todayCoreWords().length, S.goal)}<span class="muted"> / ${S.goal}</span></b></div>
       ${extraCount > 0 ? `<div class="row" style="margin-top:8px"><span>额外学习</span><b style="font-size:22px">${extraCount}</b></div>` : ''}
     </div>
-    ${(()=>{
-      const empty = Object.keys(S.data).length === 0
-        && !(S.imported && S.imported.list && S.imported.list.length)
-        && !(S.custom && S.custom.length);
-      if(!empty) return '';
-      return `<div class="card" style="border-color:#2b6b8c">
-        <b>第一次用？先三件事</b>
-        <div class="muted" style="margin-top:8px;line-height:1.9">
-          ① 设置 → <b>📥 导入词库</b>：粘贴别人给你的 JSON<br>
-          ② 或者点下面「＋ 添加生词」自己加<br>
-          ③ 内置的「功能词」128 个是地基，可以先背它
-        </div>
-        <div class="muted" style="margin-top:8px;color:#ffc857">数据存在这台设备的浏览器里，每周去设置点一次「导出备份」保平安。</div>
-      </div>`;
-    })()}
     <button class="btn primary" id="start" ${(!canResume && newLeft === 0) ? 'disabled style="opacity:.45;cursor:not-allowed"' : ''}>${canResume ? resumeLabel : (newLeft > 0 ? '开始背单词' : (quotaLeft ? '词库已背完（换词库或加词）' : '今日新词已完成'))}</button>
     ${(!canResume && quotaLeft && deckEmpty) ? `<div class="muted" style="text-align:center;margin-top:6px">当前词库已经没有没学过的词了 · 去设置换词库，或点「添加生词」</div>` : ''}
     ${due > 0
@@ -2228,7 +2735,7 @@ function renderSettings(){
 
     <p class="sub">学习范围</p>
     <div class="grid3">
-      ${['func','all'].concat(S.imported && S.imported.list && S.imported.list.length ? ['imported'] : []).map(k=>`<button class="btn ${S.deck===k?'primary':''} sm" data-deck="${k}">${deckName(k)}</button>`).join('')}
+      ${['game','ach','steam','func','cet4','all'].concat(S.imported && S.imported.list && S.imported.list.length ? ['imported'] : []).map(k=>`<button class="btn ${S.deck===k?'primary':''} sm" data-deck="${k}">${deckName(k)}</button>`).join('')}
     </div>
     ${(()=>{
       const ds = deckStats(S.deck);
@@ -2474,6 +2981,23 @@ try {
   if (qs.get('demo') === '1') {
     S.timerAt = Date.now();
     S.reviewedDate = '';
+  }
+  // 调试种子：必须同时带 ?test=1，否则直接忽略，绝不碰真实数据
+  if (qs.get('seed') === 'root' && IS_TESTMODE && KEY === 'vocab_test') {
+    // 调试：造一个「长词 + 错 3 次」的词，用来看词根拆解
+    const w = 'equipment';
+    S.deck = 'all';
+    S.data[w] = Object.assign({}, S.data[w] || {}, {s: 2, bad: 3, ok: 1, due: Date.now() - 1000, copied: 1, ever: 1});
+    save();
+    try { document.title = 'SEED ' + S.deck; } catch(e){}
+    try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+    setTimeout(()=>{
+      const item = allDeckWords().find(x=>x.w===w);
+      if(!item) return;
+      session = {queue: [item], idx:0, retry:[], total:1, src:'core'};
+      saveSession();
+      renderCard();
+    }, 700);
   }
 } catch (e) {}
 migrateDayBoundary();
