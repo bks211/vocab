@@ -949,6 +949,219 @@ function setBack(on){
   app.classList.toggle('hasback', !!on);
 }
 
+
+/* ============ 功能词·场景卡（结构 + 例句 + 规律 + 填空） ============ */
+const SCENES = [
+  { head:'to · 给谁', rule:'动词 + 宾语 + to + 人（把东西给出去）',
+    ex:['Give it to me.','Send the file to him.','Please explain the rule to us.'],
+    bad:'✗ give me it（英语不这么说，除非是代词宾语的固定搭配）',
+    q:'Please explain the rule ____ us.', opts:['for','to','with','at'], ans:1,
+    why:'explain sth to sb 是固定结构：解释给某人听。' },
+
+  { head:'to · 方向', rule:'go / come / walk / fly + to + 地点',
+    ex:['I go to school by bus.','Walk to the end of the street.','She flew to Tokyo.'],
+    bad:'✗ go home to（home 前面不加 to）',
+    q:'He walked ____ the door and knocked.', opts:['to','at','in','on'], ans:0,
+    why:'walk to + 目的地，表示朝那里走过去。' },
+
+  { head:'to · 表目的（不定式）', rule:'动作 + to do，说明做这件事是为了什么',
+    ex:['I came to help you.','She went out to buy milk.','He stopped to rest.'],
+    bad:'对比：stop to rest（停下来去休息）vs stop resting（停止休息）',
+    q:'He stopped ____ a cigarette.', opts:['smoke','to smoke','smoking','smoked'], ans:1,
+    why:'stop to do = 停下来去做另一件事；stop doing = 停止正在做的事。' },
+
+  { head:'for · 为了（给谁/为什么）', rule:'for + 名词，表示目的或受益者',
+    ex:['This gift is for you.','I booked a room for two.','Thanks for your help.'],
+    bad:'✗ This gift is to you（给某人用 for）',
+    q:'I bought this book ____ my sister.', opts:['to','for','at','with'], ans:1,
+    why:'buy sth for sb = 给某人买某物；受益者用 for。' },
+
+  { head:'for · 持续多久', rule:'for + 一段时间（多久）',
+    ex:['I stayed there for three days.','Wait for ten minutes.','She has lived here for years.'],
+    bad:'对比：since 2018（从某点起）vs for 3 years（持续多久）',
+    q:'We waited ____ two hours.', opts:['since','for','in','during'], ans:1,
+    why:'two hours 是一段时间，用 for；since 后面跟时间点。' },
+
+  { head:'in · 内部 / 范围内', rule:'in + 立体空间、城市、年份、月份',
+    ex:['The key is in the box.','She lives in Beijing.','It happened in 2024.'],
+    bad:'✗ in the table（桌面是表面，用 on）',
+    q:'The money is ____ my pocket.', opts:['on','in','at','by'], ans:1,
+    why:'口袋是内部空间，用 in。' },
+
+  { head:'in · 多久之后（将来）', rule:'in + 一段时间 = 过多久以后（用于将来）',
+    ex:['I will be back in ten minutes.','The train leaves in two hours.'],
+    bad:'对比：after ten minutes 也可以，但 in 更常用于“从现在算起”',
+    q:'The movie starts ____ five minutes.', opts:['after','in','for','at'], ans:1,
+    why:'从现在起五分钟后开始，用 in five minutes。' },
+
+  { head:'on · 表面接触', rule:'on + 表面（桌面、墙、屏幕），也用于乘坐',
+    ex:['The book is on the table.','Put it on the wall.','I met him on the bus.'],
+    bad:'✗ on the box 内部（内部用 in）',
+    q:'There is a picture ____ the wall.', opts:['in','on','at','to'], ans:1,
+    why:'挂在墙上，接触墙面，用 on。' },
+
+  { head:'on · 具体某天', rule:'on + 具体日期、星期、某天',
+    ex:['We meet on Monday.','It happened on May 1st.','See you on my birthday.'],
+    bad:'对比：in May（月份）、on May 1st（具体某天）',
+    q:'The exam is ____ Friday morning.', opts:['in','at','on','for'], ans:2,
+    why:'具体到某一天（哪怕带 morning），介词用 on。' },
+
+  { head:'at · 具体时刻 / 点', rule:'at + 钟点、night、门口等“点”',
+    ex:['The class starts at 8 o\'clock.','He works at night.','Wait at the door.'],
+    bad:'对比：in the morning（一段时间）vs at night（固定搭配）',
+    q:'She usually gets up ____ six.', opts:['in','on','at','for'], ans:2,
+    why:'具体钟点前用 at。' },
+
+  { head:'with · 和谁一起 / 用什么工具', rule:'with + 人（一起）或 + 工具（用）',
+    ex:['Come with me.','Cut it with a knife.','He wrote it with a pencil.'],
+    bad:'✗ use a knife to cut it with（重复）',
+    q:'Please write your name ____ a pen.', opts:['by','with','in','on'], ans:1,
+    why:'用具体工具，介词用 with。' },
+
+  { head:'by · 手段 / 被动施动 / 截止', rule:'by + 交通方式、by + 人（被动）、by + 时间（不迟于）',
+    ex:['I go to work by bus.','This song was written by him.','Finish it by Friday.'],
+    bad:'✗ by a pen（具体工具用 with）',
+    q:'The report must be finished ____ Friday.', opts:['until','by','at','in'], ans:1,
+    why:'by + 时间点 = 不迟于某个时间，强调截止。' },
+
+  { head:'if · 真实条件', rule:'If + 现在时，主句用将来时（主将从现）',
+    ex:['If it rains, we will stay home.','If you study, you will pass.'],
+    bad:'✗ If it will rain...（条件句里不用 will）',
+    q:'If it ____ tomorrow, we will cancel the trip.', opts:['will rain','rains','rained','is raining'], ans:1,
+    why:'主将从现：条件从句用一般现在时。' },
+
+  { head:'unless · 除非（= if not）', rule:'unless + 肯定句 = if ... not',
+    ex:['You cannot pass unless you study.','I will go unless it rains.'],
+    bad:'✗ unless you don\'t study（双重否定）',
+    q:'You will fail ____ you work harder.', opts:['if','unless','because','although'], ans:1,
+    why:'unless = 除非、如果不，后面不再加否定。' },
+
+  { head:'when vs while', rule:'when 可接短暂动作；while 接持续性动作（常进行时）',
+    ex:['When he arrived, we left.','While I was cooking, he called.'],
+    bad:'对比：While he arrived（arrive 是瞬间动作，不用 while）',
+    q:'____ I was walking home, it started to rain.', opts:['When','While','Until','Since'], ans:1,
+    why:'was walking 是持续动作，用 while。' },
+
+  { head:'because vs so', rule:'because 给原因，so 给结果；两个不能同时用',
+    ex:['I stayed home because it rained.','It rained, so I stayed home.'],
+    bad:'✗ Because it rained, so I stayed home.',
+    q:'He was tired, ____ he went to bed early.', opts:['because','so','although','unless'], ans:1,
+    why:'后半句是结果，用 so。' },
+
+  { head:'although vs but', rule:'although 引导让步从句；不能 although…but 双用',
+    ex:['Although it was hard, I finished it.','It was hard, but I finished it.'],
+    bad:'✗ Although it was hard, but I finished it.',
+    q:'____ he is poor, he is happy.', opts:['Although','But','Because','So'], ans:0,
+    why:'although 开头引导让步，后面主句不再用 but。' },
+
+  { head:'that · 引导宾语从句', rule:'动词后接 that + 完整句子，that 可省略',
+    ex:['I think that he is right.','She said that she was busy.'],
+    bad:'✗ I think he is right that（位置错）',
+    q:'I believe ____ he will come.', opts:['what','that','which','who'], ans:1,
+    why:'believe 后接完整的宾语从句，用 that。' },
+
+  { head:'which vs that · 定语从句', rule:'限定性定语从句两者皆可；非限定（逗号后）只用 which',
+    ex:['The book that/which I bought is good.','He passed the exam, which surprised us.'],
+    bad:'✗ He passed the exam, that surprised us.',
+    q:'She got full marks, ____ surprised everyone.', opts:['that','which','who','what'], ans:1,
+    why:'逗号后的非限定定语从句只能用 which。' },
+
+  { head:'since vs for', rule:'since + 时间点（自从）；for + 一段时间（持续）',
+    ex:['I have lived here since 2018.','I have lived here for six years.'],
+    bad:'✗ since six years（since 后必须是时间点）',
+    q:'I have known him ____ ten years.', opts:['since','for','in','from'], ans:1,
+    why:'ten years 是一段时间，用 for。' }
+];
+
+let scene = null;
+
+function startScenes(){
+  scene = { list: shuffle(SCENES.slice()).slice(0, 10), idx: 0, right: 0, wrong: 0 };
+  renderScene();
+}
+
+function sceneSaveWrong(s, pick){
+  try{
+    const KEY2 = 'err_book_v1';
+    const d = JSON.parse(localStorage.getItem(KEY2) || 'null') || { items: [] };
+    if(!Array.isArray(d.items)) d.items = [];
+    d.items.unshift({
+      id: Date.now() + '' + Math.floor(Math.random()*1000),
+      type: 'gram',
+      reasons: ['固定搭配漏介词'],
+      stem: s.q,
+      my: '选了 ' + s.opts[pick],
+      right: s.opts[s.ans],
+      note: s.head + ' · ' + s.why,
+      at: Date.now()
+    });
+    localStorage.setItem(KEY2, JSON.stringify(d));
+    toast('已记进错题本');
+  }catch(e){}
+}
+
+function renderScene(){
+  if(!scene) return;
+  setBack(true);
+  window.__AT_TOOL_HOME = false;
+  if(scene.idx >= scene.list.length){
+    $("#view").innerHTML = `
+      <h1>场景练习完成</h1>
+      <p class="sub">答对 ${scene.right} / ${scene.list.length}</p>
+      <div class="card">这 20 张卡是「结构」，不是单词。错的那几张，去错题本里再看一眼。</div>
+      <button class="btn primary" id="again">再来一轮</button>
+      <button class="btn ghost" id="home">返回</button>
+    `;
+    $("#again").onclick = startScenes;
+    $("#home").onclick = renderHome;
+    return;
+  }
+  const s = scene.list[scene.idx];
+  $("#view").innerHTML = `
+    <div class="row" style="margin-bottom:10px">
+      <span class="tag">${scene.idx+1} / ${scene.list.length}</span>
+      <span class="muted">场景卡</span>
+    </div>
+    <div class="card">
+      <div class="big" style="font-size:22px">${esc(s.head)}</div>
+      <div style="margin:10px 0 12px;color:#cfe9ff">${esc(s.rule)}</div>
+      ${s.ex.map(e=>`<div style="margin:6px 0;font-size:15px">· ${esc(e)}</div>`).join('')}
+      ${s.bad ? `<div class="muted" style="margin-top:10px;color:#ffc857">${esc(s.bad)}</div>` : ''}
+    </div>
+    <button class="btn primary" id="goQ">看懂了，来一道 →</button>
+    <button class="btn ghost" id="home">返回</button>
+  `;
+  $("#goQ").onclick = ()=> {
+    $("#view").innerHTML = `
+      <div class="row" style="margin-bottom:10px">
+        <span class="tag">${scene.idx+1} / ${scene.list.length}</span>
+        <span class="muted">${esc(s.head)}</span>
+      </div>
+      <h1 style="font-size:19px;line-height:1.6">${esc(s.q)}</h1>
+      <div id="opts">${s.opts.map((o,i)=>`<button class="btn" data-o="${i}" style="text-align:left">${'ABCD'[i]}. ${esc(o)}</button>`).join('')}</div>
+      <div id="fb"></div>
+      <button class="btn ghost hide" id="next">下一张 →</button>
+    `;
+    document.querySelectorAll('[data-o]').forEach(b=> b.onclick = ()=>{
+      const pick = Number(b.dataset.o);
+      const ok = pick === s.ans;
+      document.querySelectorAll('[data-o]').forEach(x=> x.disabled = true);
+      b.style.borderColor = ok ? '#3ddc97' : '#ff6b6b';
+      b.style.background = ok ? 'rgba(61,220,151,.12)' : 'rgba(255,107,107,.12)';
+      if(!ok){
+        const rb = document.querySelector(`[data-o="${s.ans}"]`);
+        if(rb){ rb.style.borderColor = '#3ddc97'; rb.style.background = 'rgba(61,220,151,.12)'; }
+        scene.wrong++; sceneSaveWrong(s, pick); sfxWrong();
+      } else { scene.right++; sfxCorrect(); fireworks(2); }
+      $("#fb").innerHTML = `<div class="card" style="margin-top:14px"><b style="color:${ok?'#3ddc97':'#ff8a8a'}">${ok?'答对了':'答错了'}</b><div class="muted" style="margin-top:6px">${esc(s.why)}</div></div>`;
+      $("#next").classList.remove('hide');
+      $("#next").onclick = ()=>{ scene.idx++; renderScene(); };
+    });
+    $("#home").onclick = renderHome;
+  };
+  $("#home").onclick = renderHome;
+}
+
 function renderHome(){
   setBack(true);
   window.__AT_TOOL_HOME = true;
@@ -1073,6 +1286,7 @@ function renderHome(){
       ? `<button class="btn" id="pairDrill">⚠️ 易错单词辨别（${S.confuse.filter(p=>!p.due || p.due <= Date.now()).length} 组待练）</button>`
       : `<button class="btn" disabled style="opacity:.45;cursor:not-allowed">⚠️ 易错单词辨别 · 今天的练完了</button>`) : ''}
     <button class="btn ghost" id="extra" style="font-size:14px;padding:11px">＋ 额外学 5 个（不计入今日目标）</button>
+    <button class="btn" id="sceneBtn" style="color:#4ea8de">🧩 场景练习（功能词 20 张）</button>
     ${(()=>{ const n = deckWords().filter(x=>((S.data[x.w]||{}).pron||0) > 0).length; return n ? `<button class="btn" id="pronR" style="color:#ffc857">🔈 发音存疑（${n} 个）</button>` : ''; })()}
     ${done ? `<button class="btn ghost" id="free" style="font-size:14px;padding:11px">🎮 自由练习（不按计划）</button>` : ''}
     ${(S.readDate === todayStr())
@@ -1105,6 +1319,7 @@ function renderHome(){
     }
     startSession(done, 'core');
   };
+  if($("#sceneBtn")) $("#sceneBtn").onclick = startScenes;
   if($("#extra")) $("#extra").onclick = ()=>{
     if(!confirm('额外学 5 个词：不计入今日目标，也不进今晚的回顾。继续？')) return;
     startSession(false, 'extra');
