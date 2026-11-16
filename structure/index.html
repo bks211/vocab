@@ -1,0 +1,336 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1216">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.png">
+<title>结构训练</title>
+<style>
+  :root{--bg:#0f1216;--card:#171c22;--line:#252c35;--fg:#e8edf3;--dim:#8b96a4;--acc:#4ea8de;--ok:#3ddc97;--bad:#ff6b6b;--warn:#ffc857}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--fg);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;display:flex;flex-direction:column;align-items:center;padding-bottom:env(safe-area-inset-bottom)}
+  #app{width:100%;max-width:560px;min-height:100%;display:flex;flex-direction:column;padding:20px 16px 34px}
+  header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .title{font-size:15px;letter-spacing:.08em;color:var(--dim)}
+  h1{font-size:22px;margin:0 0 6px}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+  .muted{color:var(--dim);font-size:13px}
+  .btn{display:block;width:100%;padding:15px;border-radius:12px;border:1px solid var(--line);background:#1d242c;color:var(--fg);font-size:16px;cursor:pointer;margin-top:10px;font-family:inherit;text-align:left}
+  .btn.primary{background:var(--acc);border-color:var(--acc);color:#07121a;font-weight:600;text-align:center}
+  .btn.ghost{background:transparent}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+  .sent{font-size:19px;line-height:1.7;margin:8px 0 4px;white-space:pre-line}
+  .zh{margin-top:10px;padding:10px 12px;border-radius:10px;background:#10161c;border:1px dashed #2c3742;color:#c8d3df;font-size:14px;display:none}
+  .zh.on{display:block}
+  .trBtn{margin-top:8px;background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+  .hide{display:none!important}
+  .navback{
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+    background:transparent;color:var(--fg);font-size:22px;line-height:1;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0 0 2px;font-family:inherit;
+  }
+  .navback:active{background:#20272f}
+  .navback.hide{display:none!important}
+  .mode{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;color:inherit;font-family:inherit}
+  .mode b{font-size:17px;display:block;margin-bottom:2px}
+  .mode span{font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="navback" id="navBack" aria-label="返回">‹</button>
+    <div class="title">结构训练</div>
+    <div class="muted" id="cnt" style="margin-left:auto"></div>
+  </header>
+  <main id="view"></main>
+</div>
+<script>
+/* ====== 题库：五类 ====== */
+const BANK = [
+  /* ---- 1. 结构标注（看懂句子在干什么） ---- */
+  {t:'label', q:'While I was walking home, it started to rain.', zh:'我走回家的时候，开始下雨了。',
+   opts:['前半句是主句','前半句是时间状语从句','前半句是定语从句','前半句是宾语从句'], a:1,
+   why:'while 引导时间状语从句；主句是 it started to rain。'},
+  {t:'label', q:'The book that you lent me is really good.', zh:'你借给我的那本书真的很好看。',
+   opts:['that 从句修饰 the book（定语从句）','that 从句是宾语从句','that 从句是主语从句','that 是代词，指代你'], a:0,
+   why:'that 引导定语从句，修饰前面的 the book；主干是 The book is good。'},
+  {t:'label', q:"I don't know whether he will come.", zh:'我不知道他会不会来。',
+   opts:['whether 引导定语从句','whether 引导宾语从句','whether 引导主语从句','whether 是介词'], a:1,
+   why:'know 后面接的是宾语从句，whether 表示“是否”。'},
+  {t:'label', q:'Because he was late, we missed the bus.', zh:'因为他迟到了，我们错过了公交车。',
+   opts:['原因状语从句','条件状语从句','让步状语从句','定语从句'], a:0,
+   why:'because 引导原因；主句是 we missed the bus。'},
+  {t:'label', q:'If you finish early, give me a call.', zh:'如果你提前完成，给我打个电话。',
+   opts:['条件状语从句','时间状语从句','定语从句','宾语从句'], a:0,
+   why:'if 引导条件状语从句；注意主句用祈使句，从句用一般现在时。'},
+  {t:'label', q:'The man who called you is my uncle.', zh:'刚才给你打电话的那个人是我叔叔。',
+   opts:['who 从句修饰 the man','who 从句是主语从句','who 从句是状语','who 是疑问词，句子不完整'], a:0,
+   why:'who 引导定语从句修饰 the man；主干是 The man is my uncle。'},
+  {t:'label', q:'Although it rained heavily, they still played football.', zh:'虽然雨下得很大，他们还是踢了足球。',
+   opts:['让步状语从句（虽然）','原因状语从句','结果状语从句','定语从句'], a:0,
+   why:'although 表示让步；注意不能再加 but。'},
+  {t:'label', q:'What he said surprised us all.', zh:'他说的话让我们都很吃惊。',
+   opts:['What 从句作主语','What 从句作宾语','What 从句是定语','What 是感叹词'], a:0,
+   why:'What he said 整个充当主语（主语从句），surprised 是谓语。'},
+
+  /* ---- 2. 改错辨析（多余 / 缺成分） ---- */
+  {t:'fix', q:'下面哪句是对的？', zh:'虽然很难，但我还是完成了。',
+   opts:['Although it was hard, but I finished it.','Although it was hard, I finished it.','It was hard, although I finished it.','Although hard, but I finished it.'], a:1,
+   why:'although 和 but 不能同时用；要么 although…，要么 …but…。'},
+  {t:'fix', q:'下面哪句是对的？', zh:'他向我解释了这条规则。',
+   opts:['He explained me the rule.','He explained the rule to me.','He explained to me the rule it.','He explained me to the rule.'], a:1,
+   why:'explain 不能说 explain sb sth，要用 explain sth to sb。'},
+  {t:'fix', q:'下面哪句是对的？', zh:'我期待收到你的来信。',
+   opts:['I look forward to hear from you.','I look forward to hearing from you.','I look forward hearing from you.','I look forward to heard from you.'], a:1,
+   why:'look forward to 里的 to 是介词，后面接 -ing。'},
+  {t:'fix', q:'下面哪句是对的？', zh:'原因是他在生病。',
+   opts:['The reason is because he was ill.','The reason is that he was ill.','The reason is why he was ill.','The reason is for he was ill.'], a:1,
+   why:'the reason is that… 是固定句型，不用 because。'},
+  {t:'fix', q:'下面哪句是对的？', zh:'尽管下雨，我们还是出去了。',
+   opts:['Despite of the rain, we went out.','Despite the rain, we went out.','Despite it rained, we went out.','Despite of raining, we went out.'], a:1,
+   why:'despite 后面直接接名词，不加 of；in spite of 才加 of。'},
+  {t:'fix', q:'下面哪句是对的？', zh:'他建议我先休息。',
+   opts:['He suggested me to have a rest.','He suggested that I (should) have a rest.','He suggested me having a rest.','He suggested to me have a rest.'], a:1,
+   why:'suggest 不能接 sb to do；用 suggest that sb (should) do 或 suggest doing。'},
+
+  /* ---- 3. 变体（同一个词，不同形式） ---- */
+  {t:'variant', q:'She is used to ____ up early.', zh:'她习惯早起。',
+   opts:['get','getting','got','be gotten'], a:1,
+   why:'be used to doing = 习惯于；used to do 才是“过去常常”。'},
+  {t:'variant', q:'The problem needs ____ carefully.', zh:'这个问题需要仔细处理。',
+   opts:['to solve','solving','solved','solve'], a:1,
+   why:'need doing = need to be done，主动形式表被动。'},
+  {t:'variant', q:'I prefer reading ____ watching TV.', zh:'比起看电视，我更喜欢读书。',
+   opts:['than','to','for','with'], a:1,
+   why:'prefer A to B 用 to，不用 than。'},
+  {t:'variant', q:'He stopped ____ a cigarette and went on working.', zh:'他停下来抽了根烟，然后继续工作。',
+   opts:['smoking','to smoke','smoke','smoked'], a:1,
+   why:'stop to do = 停下来去做另一件事；stop doing = 停止做这件事。'},
+  {t:'variant', q:'____ the meeting, he left the office.', zh:'开完会之后，他离开了办公室。',
+   opts:['After attended','Having attended','Attend','To attended'], a:1,
+   why:'先开会后离开，用完成式分词 Having attended 表示动作先后。'},
+
+  /* ---- 4. 无空题（先判断要不要加） ---- */
+  {t:'noblank', q:'"He explained me the rule." 这句话怎么了？', zh:'他向我解释了规则。',
+   opts:['本来就对','需要加 to：explain the rule to me','需要加 for','需要去掉 the'], a:1,
+   why:'explain sth to sb；缺 to 就是中式表达。'},
+  {t:'noblank', q:'"I discussed about the plan with him." 这句话怎么了？', zh:'我和他讨论了这个计划。',
+   opts:['本来就对','about 多余：discuss sth','需要加 on','需要加 to'], a:1,
+   why:'discuss 是及物动词，直接接宾语，不加 about。'},
+  {t:'noblank', q:'"She married with him last year." 这句话怎么了？', zh:'她去年和他结婚了。',
+   opts:['本来就对','with 多余：marry sb','需要加 to','需要加 by'], a:1,
+   why:'marry 是及物动词，marry sb = 和某人结婚。'},
+  {t:'noblank', q:'"I entered into the room quietly." 这句话怎么了？', zh:'我悄悄地进了房间。',
+   opts:['本来就对','into 多余：enter the room','需要加 in','需要加 to'], a:1,
+   why:'enter 及物，直接 enter the room。'},
+  {t:'noblank', q:'"There are many people are waiting outside." 这句话怎么了？', zh:'外面有很多人在等。',
+   opts:['本来就对','多了一个 are：many people waiting','需要加 who','需要去掉 people'], a:1,
+   why:'there be 句型里不能再出现谓语 are；要说 many people waiting 或 who are waiting。'},
+
+  /* ---- 5. 拆句（找主干） ---- */
+  {t:'parse', q:'The book which I bought yesterday is very useful.', zh:'我昨天买的那本书很有用。',
+   opts:['The book is very useful','I bought yesterday','which I bought','The book bought yesterday'], a:0,
+   why:'主干 = 主语 The book + 系动词 is + 表语 useful；which 从句是修饰成分。'},
+  {t:'parse', q:'The man who called you is my uncle.', zh:'给你打电话的那个人是我叔叔。',
+   opts:['The man is my uncle','who called you','The man called you','you is my uncle'], a:0,
+   why:'主句 = The man is my uncle；who called you 是定语从句。'},
+  {t:'parse', q:'When the bell rang, the students left the classroom quickly.', zh:'铃响时，学生们很快离开了教室。',
+   opts:['the students left','the bell rang','the classroom quickly','When the bell'], a:0,
+   why:'主句 = the students left the classroom；When 从句是时间状语。'},
+  {t:'parse', q:'What he said surprised us all.', zh:'他说的话让我们所有人惊讶。',
+   opts:['What he said surprised us','he said','surprised us all','What he'], a:0,
+   why:'What he said 整个是主语，surprised 是谓语，us all 是宾语。'},
+  {t:'parse', q:'The girl standing at the door is my sister.', zh:'站在门口的那个女孩是我妹妹。',
+   opts:['The girl is my sister','standing at the door','The girl standing','my sister at the door'], a:0,
+   why:'standing at the door 是现在分词作后置定语；主干 The girl is my sister。'},
+  {t:'parse', q:'I think that he is right.', zh:'我认为他是对的。',
+   opts:['I think','he is right','I think that he','that he is right'], a:0,
+   why:'主句 = I think；that he is right 是宾语从句，整体作 think 的宾语。'},
+];
+
+const MODES = [
+  {k:'label',   name:'结构标注', desc:'看懂这句是什么从句 / 什么成分'},
+  {k:'fix',     name:'改错辨析', desc:'多了一个词，还是少了一个词'},
+  {k:'variant', name:'变体',     desc:'同一个词，后面接什么形式'},
+  {k:'noblank', name:'无空题',   desc:'先判断该不该加，再决定加什么'},
+  {k:'parse',   name:'拆句找主干', desc:'把句子切成主干和修饰成分'},
+];
+
+/* ====== 状态 ====== */
+const KEY = 'structure_v1';
+let S = (function(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {log:[]}; }catch(e){ return {log:[]}; } })();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function toast(m){ const d=document.createElement('div'); d.textContent=m;
+  d.style.cssText='position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#20272f;color:#e8edf3;padding:10px 16px;border-radius:10px;font-size:14px;z-index:99';
+  document.body.appendChild(d); setTimeout(()=>d.remove(),1500); }
+
+/* 音效：简单合成 */
+let AC=null;
+function beep(freqs,type){
+  try{
+    if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended') AC.resume();
+    freqs.forEach((f,i)=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type||'triangle'; o.frequency.value=f;
+      const t0=AC.currentTime+i*0.09;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.linearRampToValueAtTime(0.14,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+0.2);
+      o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0+0.24);
+    });
+  }catch(e){}
+}
+const okSfx=()=>beep([523,659,784]);
+const badSfx=()=>beep([220,165],'sawtooth');
+
+/* 记进错题本（跟错题归因本共享） */
+function saveWrong(item, pick){
+  try{
+    const d = JSON.parse(localStorage.getItem('err_book_v1') || 'null') || {items:[]};
+    if(!Array.isArray(d.items)) d.items = [];
+    d.items.unshift({
+      id: Date.now() + '' + Math.floor(Math.random()*1000),
+      type: item.t === 'parse' ? 'gram' : (item.t === 'label' ? 'gram' : 'gram'),
+      reasons: [ ({label:'看不懂句子结构', parse:'分不清主干和修饰成分', fix:'固定搭配漏介词', variant:'词性/形式混用', noblank:'中式表达（多加了词）'})[item.t] ],
+      stem: item.q,
+      my: '选了 ' + item.opts[pick],
+      right: item.opts[item.a],
+      note: item.why,
+      at: Date.now()
+    });
+    localStorage.setItem('err_book_v1', JSON.stringify(d));
+    toast('已记进错题本');
+  }catch(e){}
+}
+
+/* ====== 首页 ====== */
+function renderHome(){
+  setBack(true);
+  window.__AT_TOOL_HOME = true;
+  const total = S.log.length;
+  $("#cnt").textContent = total ? ('已练 ' + total + ' 题') : '';
+  $("#view").innerHTML = `
+    <h1>结构训练</h1>
+    <p class="sub">不背词，练“看懂句子”。每句都可点「译」看中文。</p>
+    ${MODES.map(m=>{
+      const pool = BANK.filter(x=> x.t === m.k).length;
+      return `<button class="mode" data-m="${m.k}">
+        <b>${m.name}</b>
+        <span>${m.desc} · ${pool} 题</span>
+      </button>`;
+    }).join('')}
+    <button class="btn ghost" id="stats" style="margin-top:6px;text-align:center">📊 我的正确率</button>
+  `;
+  document.querySelectorAll('[data-m]').forEach(b=> b.onclick = ()=> startMode(b.dataset.m));
+  $("#stats").onclick = renderStats;
+}
+
+function renderStats(){
+  setBack(true); window.__AT_TOOL_HOME = false;
+  const byType = {};
+  S.log.forEach(x=>{ byType[x.t] = byType[x.t] || {r:0,n:0}; byType[x.t].n++; if(x.ok) byType[x.t].r++; });
+  const rows = Object.keys(byType).map(k=>{
+    const name = (MODES.find(m=>m.k===k)||{}).name || k;
+    const p = Math.round(byType[k].r / byType[k].n * 100);
+    return `<div style="margin:12px 0"><div class="row"><span>${name}</span><b>${p}%</b></div>
+      <div style="height:8px;background:#20272f;border-radius:99px;overflow:hidden;margin-top:5px">
+        <i style="display:block;height:100%;width:${p}%;background:#4ea8de"></i></div>
+      <div class="muted" style="font-size:12px;margin-top:3px">${byType[k].r}/${byType[k].n}</div></div>`;
+  }).join('');
+  $("#view").innerHTML = `<h1>正确率</h1><p class="sub">按题型分开看，才知道哪块最弱。</p>
+    ${rows || '<div class="muted">还没有数据，先练一轮。</div>'}
+    <button class="btn ghost" id="back" style="margin-top:16px;text-align:center">返回</button>`;
+  $("#back").onclick = renderHome;
+}
+
+/* ====== 练习 ====== */
+let run = null;
+
+function startMode(k){
+  const pool = shuffle(BANK.filter(x=> x.t === k).slice());
+  run = { k, list: pool, i: 0, right: 0 };
+  renderQ();
+}
+
+function renderQ(){
+  setBack(true); window.__AT_TOOL_HOME = false;
+  if(run.i >= run.list.length){
+    $("#view").innerHTML = `
+      <h1>这组做完了</h1>
+      <p class="sub">答对 ${run.right} / ${run.list.length}</p>
+      <div class="card">错的那几题已经进了错题本，去那边看排行。</div>
+      <button class="btn primary" id="again">再来一组</button>
+      <button class="btn ghost" id="home" style="text-align:center">返回</button>`;
+    $("#again").onclick = ()=> startMode(run.k);
+    $("#home").onclick = renderHome;
+    return;
+  }
+  const it = run.list[run.i];
+  $("#view").innerHTML = `
+    <div class="row" style="margin-bottom:8px">
+      <span class="tag">${(MODES.find(m=>m.k===it.t)||{}).name} ${run.i+1}/${run.list.length}</span>
+    </div>
+    <div class="sent">${esc(it.q)}</div>
+    <button class="trBtn" id="trBtn">译</button>
+    <div class="zh" id="zh">${esc(it.zh)}</div>
+    <div id="opts" style="margin-top:14px">
+      ${it.opts.map((o,i)=>`<button class="btn" data-o="${i}">${'ABCD'[i]}. ${esc(o)}</button>`).join('')}
+    </div>
+    <div id="fb"></div>
+    <button class="btn ghost hide" id="next" style="text-align:center">下一题 →</button>
+  `;
+  $("#trBtn").onclick = ()=>{ $("#zh").classList.toggle('on'); };
+  document.querySelectorAll('[data-o]').forEach(b=> b.onclick = ()=>{
+    const pick = Number(b.dataset.o);
+    const ok = pick === it.a;
+    document.querySelectorAll('[data-o]').forEach(x=> x.disabled = true);
+    b.style.borderColor = ok ? '#3ddc97' : '#ff6b6b';
+    b.style.background = ok ? 'rgba(61,220,151,.12)' : 'rgba(255,107,107,.12)';
+    if(!ok){
+      const rb = document.querySelector(`[data-o="${it.a}"]`);
+      if(rb){ rb.style.borderColor = '#3ddc97'; rb.style.background = 'rgba(61,220,151,.12)'; }
+      badSfx(); saveWrong(it, pick);
+    } else { run.right++; okSfx(); }
+    S.log.push({t: it.t, ok, at: Date.now()});
+    if(S.log.length > 500) S.log = S.log.slice(-500);
+    save();
+    $("#fb").innerHTML = `<div class="card" style="margin-top:14px"><b style="color:${ok?'#3ddc97':'#ff6b6b'}">${ok?'答对了':'答错了'}</b>
+      <div style="margin-top:6px;font-size:14px">${esc(it.why)}</div>
+      <div class="muted" style="margin-top:6px">${esc(it.zh)}</div></div>`;
+    $("#next").classList.remove('hide');
+    $("#next").onclick = ()=>{ run.i++; renderQ(); };
+  });
+}
+
+/* 返回按钮 */
+function setBack(on){
+  const b = document.getElementById('navBack');
+  if(!b) return;
+  b.classList.toggle('hide', !on);
+}
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.id === 'navBack'){
+    if(window.__AT_TOOL_HOME){ location.href = '../'; return; }
+    renderHome();
+  }
+});
+
+renderHome();
+</script>
+</body>
+</html>
+
